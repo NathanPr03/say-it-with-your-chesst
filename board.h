@@ -24,6 +24,21 @@ typedef struct {
     int y_coord;
 } Square;
 
+typedef struct {
+    Square* Pawns[8];
+    Square* Knights[2];
+    Square* Bishops[2];
+    Square* Rooks[2];
+    Square* Queen;
+    Square* King;
+}OneColoursPieces;
+
+typedef struct {
+    OneColoursPieces *whitePieces;
+    OneColoursPieces *blackPieces;
+} AllPieces;
+
+extern AllPieces allPieces;
 extern Square board[8][8];
 
 void init_board();
