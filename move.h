@@ -3,6 +3,7 @@
 #ifndef SAY_IT_WITH_YOUR_CHESST_MOVE_H
 #define SAY_IT_WITH_YOUR_CHESST_MOVE_H
 
+#include <stdbool.h>
 #include "board.h"
 
 typedef struct {
@@ -12,6 +13,9 @@ typedef struct {
     int to_y;
 } Move;
 
-Move* generate_legal_moves_for_cell(Square *square);
+bool is_king_in_check(Colour colour);
+
+Move* generate_all_legal_moves();
+
 
 #endif //SAY_IT_WITH_YOUR_CHESST_MOVE_H

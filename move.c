@@ -11,6 +11,9 @@ const int MAX_POTENTIAL_TOTAL_MOVES_PER_COLOR_MINUS_KING = 121;
 
 const int TOTAL_PIECES_PER_COLOR = 16;
 
+/**
+ * @return Move array of size 27, either populated or all 0s. Populated entries are not fragmented.
+ */
 Move* generate_legal_moves_for_cell(Square *square) {
     Move* moves = (Move*) malloc(MAX_POTENTIAL_MOVES_FOR_ONE_PIECE * sizeof(Move));
 
@@ -48,25 +51,25 @@ Move* generate_legal_moves_for_cell(Square *square) {
         } else if(colour == BLACK) {
             // Move forward
             if(board[x+1][y].piece == EMPTY) {
-                moves[0] = (Move) {x, y, x-1, y};
-            }
-
-            // Take to left
-            if (board[x-1][y-1].color == BLACK) {
-                moves[1] = (Move) {x, y, x-1, y-1};
+                moves[0] = (Move) {x, y, x+1, y};
             }
 
             // Take to right
-            if (board[x-1][y+1].color == BLACK) {
-                moves[2] = (Move) {x, y, x-1, y+1};
+            if (board[x+1][y-1].color == WHITE) {
+                moves[1] = (Move) {x, y, x+1, y-1};
+            }
+
+            // Take to left
+            if (board[x+1][y+1].color == WHITE) {
+                moves[2] = (Move) {x, y, x+1, y+1};
             }
 
             // Promote TODO: Implement promotion
-            if(x == 1 && (board[0][y].piece == EMPTY || board[0][y-1].piece == EMPTY) || board[0][y+1].piece == EMPTY){
+            if(x == 1 && (board[0][y].piece == EMPTY || board[7][y+1].piece == EMPTY) || board[7][y+1].piece == EMPTY){
                 moves[3] = (Move) {x, y, 99999, 99999};
             }
         }
-    } if(piece == BISHOP) {
+    } else if(piece == BISHOP) {
         // Move right diagonally
         for (int i = 1; i < 8; i++) {
             if (board[x+i][y+i].piece == EMPTY) {
@@ -113,7 +116,7 @@ Move* generate_legal_moves_for_cell(Square *square) {
                 break;
             }
         }
-    } if (piece == ROOK) {
+    } else if (piece == ROOK) {
         // Move right
         for (int i = 1; i < 8; i++) {
             if (board[x][y+i].piece == EMPTY) {
@@ -161,7 +164,7 @@ Move* generate_legal_moves_for_cell(Square *square) {
                 break;
             }
         }
-    }if(piece == KNIGHT) {
+    } else if(piece == KNIGHT) {
         // Move up and right
         if (board[x+2][y+1].piece == EMPTY || board[x+2][y+1].color != colour) {
             moves[0] = (Move) {x, y, x+2, y+1};
@@ -206,7 +209,7 @@ Move* generate_legal_moves_for_cell(Square *square) {
         if (board[x+1][y-2].piece == EMPTY || board[x+1][y-2].color != colour) {
             moves[8] = (Move) {x, y, x+1, y+2};
         }
-    } if(piece == QUEEN) {
+    } else if(piece == QUEEN) {
         // Copy paste of Bishop + Rook logic TODO: Extract
         // Rook below
         // Move right
@@ -304,7 +307,7 @@ Move* generate_legal_moves_for_cell(Square *square) {
                 break;
             }
         }
-    } if(piece == KING) {
+    } else if(piece == KING) {
         // Move up
         if (board[x-1][y].piece == EMPTY || board[x-1][y].color != colour) {
             moves[0] = (Move) {x, y, x-1, y};
@@ -349,128 +352,90 @@ Move* generate_legal_moves_for_cell(Square *square) {
     return moves;
 }
 
-bool is_king_moving_into_check(Move move, Colour colour) {
-    Square* king;
-    Move* moves[MAX_POTENTIAL_TOTAL_MOVES_PER_COLOR];
-    if(colour == WHITE) {
-        king = allPieces.whitePieces->King;
-
-    } else {
-        king = allPieces.blackPieces->King;
+void merge_arrays_for_pieces(Move* the_moves, Move* some_moves, int* total_moves_added) {
+    for(int j = 0; j < MAX_POTENTIAL_MOVES_FOR_ONE_PIECE; j++) { //TODO: Should extract all this logic
+        Move* a_move = &some_moves[j];
+        if (some_moves[j].from_x == 0 && some_moves[j].from_y == 0 &&
+            some_moves[j].to_x == 0 && some_moves[j].to_y == 0) {
+            break; // Skip empty moves
+        }
+        the_moves[*total_moves_added] = *a_move;
+        (*total_moves_added)++;
     }
-
-    if(move.to_x == king->x_coord && move.to_y == king->y_coord) {
-        return true;
-    }
-
-    return false;
 }
-
 /**
- * @return Array of moves, limited to 129
+ * @return Array of moves, limited to 129. Not fragmented, one null value will be the end of the array.
  */
-Move* generate_moves_for_one_color(OneColoursPieces aColoursPieces){
-    Move *moves;
+Move* generate_moves_for_one_color(OneColoursPieces* aColoursPieces){
+    Move *moves = (Move*) malloc(MAX_POTENTIAL_TOTAL_MOVES_PER_COLOR * sizeof(Move));
     int total_moves_added = 0;
-    for(int i = 0; i < 4; i++) {
-        Square* pawn = allPieces.blackPieces->Pawns[i];
+    for(int i = 0; i < 8; i++) {
+        Square* pawn = aColoursPieces->Pawns[i];
         if(pawn == NULL) {
             continue;
         }
 
         Move* some_moves = generate_legal_moves_for_cell(pawn);
-        for(int j = 0; j < MAX_POTENTIAL_MOVES_FOR_ONE_PIECE; j++) { //TODO: Should extract all this logic
-            Move* a_move = &some_moves[j];
-            if(a_move == NULL) {
-                continue;
-            }
-            moves[total_moves_added] = a_move;
-            total_moves_added++;
-        }
+        merge_arrays_for_pieces(moves, some_moves, &total_moves_added);
+
+        free(some_moves);
     }
 
     for(int i = 0; i < 2; i++) {
-        Square* rook = allPieces.blackPieces->Rooks[i];
+        Square* rook = aColoursPieces->Rooks[i];
         if(rook == NULL) {
             continue;
         }
 
         Move* some_moves = generate_legal_moves_for_cell(rook);
-        for(int j = 0; j < MAX_POTENTIAL_MOVES_FOR_ONE_PIECE; j++) {
-            Move* a_move = &some_moves[j];
-            if(a_move == NULL) {
-                continue;
-            }
-            moves[total_moves_added] = a_move;
-            total_moves_added++;
-        }
+        merge_arrays_for_pieces(moves, some_moves, &total_moves_added);
+
+        free(some_moves);
     }
 
     for(int i = 0; i < 2; i++) {
-        Square* knight = allPieces.blackPieces->Knights[i];
+        Square* knight = aColoursPieces->Knights[i];
         if(knight == NULL) {
             continue;
         }
 
         Move* some_moves = generate_legal_moves_for_cell(knight);
-        for(int j = 0; j < MAX_POTENTIAL_MOVES_FOR_ONE_PIECE; j++) {
-            Move* a_move = &some_moves[j];
-            if(a_move == NULL) {
-                continue;
-            }
-            moves[total_moves_added] = a_move;
-            total_moves_added++;
-        }
+        merge_arrays_for_pieces(moves, some_moves, &total_moves_added);
+
+        free(some_moves);
     }
 
     for(int i = 0; i < 2; i++) {
-        Square* bishop = allPieces.blackPieces->Bishops[i];
+        Square* bishop = aColoursPieces->Bishops[i];
         if(bishop == NULL) {
             continue;
         }
 
         Move* some_moves = generate_legal_moves_for_cell(bishop);
-        for(int j = 0; j < MAX_POTENTIAL_MOVES_FOR_ONE_PIECE; j++) {
-            Move* a_move = &some_moves[j];
-            if(a_move == NULL) {
-                continue;
-            }
-            moves[total_moves_added] = a_move;
-            total_moves_added++;
-        }
+        merge_arrays_for_pieces(moves, some_moves, &total_moves_added);
+
+        free(some_moves);
     }
 
-    Move* some_moves = generate_legal_moves_for_cell(allPieces.blackPieces->Queen);
-    for(int j = 0; j < MAX_POTENTIAL_MOVES_FOR_ONE_PIECE; j++) {
-        Move* a_move = &some_moves[j];
-        if(a_move == NULL) {
-            continue;
-        }
-        moves[total_moves_added] = a_move;
-        total_moves_added++;
-    }
+    Move* some_moves = generate_legal_moves_for_cell(aColoursPieces->Queen);
+    merge_arrays_for_pieces(moves, some_moves, &total_moves_added);
 
+    free(some_moves);
     // TODO: Commented this line out to stop infinite recusrion
     // This will need to be re-added or the program will move a king into be checked by another king
-    // Move* some_moves = generate_legal_moves_for_cell(allPieces.blackPieces->King);
-//    for(int j = 0; j < MAX_POTENTIAL_MOVES_FOR_ONE_PIECE; j++) {
-//        Move* a_move = &some_moves[j];
-//        if(a_move == NULL) {
-//            continue;
-//        }
-//        moves[total_moves_added] = a_move;
-//        total_moves_added++;
-//    }
+    // Move* some_moves = generate_legal_moves_for_cell(aColoursPieces->King);
+//    merge_arrays_for_pieces(moves, some_moves, &total_moves_added);
+//  free(some_moves);
 
     return moves;
 }
 
-Move* generate_all_legal_moves(Colour colour) {
+Move* generate_all_legal_moves() {
     Move* moves = (Move*) malloc(MAX_POTENTIAL_TOTAL_MOVES_PER_COLOR * sizeof(Move));
     int total_moves_added = 0;
 
-    Move* whites_moves = generate_moves_for_one_color(*allPieces.blackPieces);
-    Move* blacks_moves = generate_moves_for_one_color(*allPieces.whitePieces);
+    Move* whites_moves = generate_moves_for_one_color(allPieces.blackPieces);
+    Move* blacks_moves = generate_moves_for_one_color(allPieces.whitePieces);
 
     for(int j = 0; j < MAX_POTENTIAL_TOTAL_MOVES_PER_COLOR; j++) {
         Move* a_move = &whites_moves[j];
@@ -501,10 +466,10 @@ bool is_king_in_check(Colour colour) {
     Move* all_legal_moves;
     Square* king;
     if(colour == WHITE) {
-        all_legal_moves = generate_all_legal_moves(BLACK);
+        all_legal_moves = generate_moves_for_one_color(allPieces.blackPieces);
         king = allPieces.whitePieces->King;
     }else {
-        all_legal_moves = generate_all_legal_moves(WHITE);
+        all_legal_moves = generate_moves_for_one_color(allPieces.whitePieces);
         king = allPieces.blackPieces->King;
     }
 
