@@ -73,9 +73,9 @@ Move* generate_legal_moves_for_cell(Square *square) {
         // Move right diagonally
         for (int i = 1; i < 8; i++) {
             if (board[x+i][y+i].piece == EMPTY) {
-                moves[i] = (Move) {x, y, x+i, y+i};
+                moves[i-1] = (Move) {x, y, x+i, y+i};
             } else if (board[x+i][y+i].color != colour) {
-                moves[i] = (Move) {x, y, x+i, y+i};
+                moves[i-1] = (Move) {x, y, x+i, y+i};
                 break;
             } else {
                 break;
@@ -84,9 +84,9 @@ Move* generate_legal_moves_for_cell(Square *square) {
         // Move left diagonally
         for (int i = 1; i < 8; i++) {
             if (board[x-i][y+i].piece == EMPTY) {
-                moves[i] = (Move) {x, y, x-i, y+i};
+                moves[i-1] = (Move) {x, y, x-i, y+i};
             } else if (board[x-i][y+i].color != colour) {
-                moves[i] = (Move) {x, y, x-i, y+i};
+                moves[i-1] = (Move) {x, y, x-i, y+i};
                 break;
             } else {
                 break;
@@ -96,9 +96,9 @@ Move* generate_legal_moves_for_cell(Square *square) {
         // Move back left diagonally
         for (int i = 1; i < 8; i++) {
             if (board[x-i][y-i].piece == EMPTY) {
-                moves[i] = (Move) {x, y, x-i, y-i};
+                moves[i-1] = (Move) {x, y, x-i, y-i};
             } else if (board[x-i][y-i].color != colour) {
-                moves[i] = (Move) {x, y, x-i, y-i};
+                moves[i-1] = (Move) {x, y, x-i, y-i};
                 break;
             } else {
                 break;
@@ -108,57 +108,57 @@ Move* generate_legal_moves_for_cell(Square *square) {
         // Move back right diagonally
         for (int i = 1; i < 8; i++) {
             if (board[x+i][y-i].piece == EMPTY) {
-                moves[i] = (Move) {x, y, x+i, y-i};
+                moves[i-1] = (Move) {x, y, x+i, y-i};
             } else if (board[x+i][y-i].color != colour) {
-                moves[i] = (Move) {x, y, x+i, y-i};
+                moves[i-1] = (Move) {x, y, x+i, y-i};
                 break;
             } else {
                 break;
             }
         }
     } else if (piece == ROOK) {
-        // Move right
+        // Move right (left for black)
         for (int i = 1; i < 8; i++) {
             if (board[x][y+i].piece == EMPTY) {
-                moves[i] = (Move) {x, y, x, y+i};
+                moves[i-1] = (Move) {x, y, x, y+i};
             } else if (board[x][y+i].color != colour) {
-                moves[i] = (Move) {x, y, x, y+i};
+                moves[i-1] = (Move) {x, y, x, y+i};
                 break;
             } else {
                 break;
             }
         }
 
-        // Move left
+        // Move left (right for black)
         for (int i = 1; i < 8; i++) {
             if (board[x][y-i].piece == EMPTY) {
-                moves[i] = (Move) {x, y, x, y-i};
+                moves[i-1] = (Move) {x, y, x, y-i};
             } else if (board[x][y-i].color != colour) {
-                moves[i] = (Move) {x, y, x, y-i};
+                moves[i-1] = (Move) {x, y, x, y-i};
                 break;
             } else {
                 break;
             }
         }
 
-        // Move up
+        // Move up (down for black)
         for (int i = 1; i < 8; i++) {
             if (board[x-i][y].piece == EMPTY) {
-                moves[i] = (Move) {x, y, x-i, y};
+                moves[i-1] = (Move) {x, y, x-i, y};
             } else if (board[x-i][y].color != colour) {
-                moves[i] = (Move) {x, y, x-i, y};
+                moves[i-1] = (Move) {x, y, x-i, y};
                 break;
             } else {
                 break;
             }
         }
 
-        // Move down
+        // Move down (up for black)
         for (int i = 1; i < 8; i++) {
             if (board[x+i][y].piece == EMPTY) {
-                moves[i] = (Move) {x, y, x+i, y};
+                moves[i-1] = (Move) {x, y, x+i, y};
             } else if (board[x+i][y].color != colour) {
-                moves[i] = (Move) {x, y, x+i, y};
+                moves[i-1] = (Move) {x, y, x+i, y};
                 break;
             } else {
                 break;
@@ -215,9 +215,9 @@ Move* generate_legal_moves_for_cell(Square *square) {
         // Move right
         for (int i = 1; i < 8; i++) {
             if (board[x][y+i].piece == EMPTY) {
-                moves[i] = (Move) {x, y, x, y+i};
+                moves[i-1] = (Move) {x, y, x, y+i};
             } else if (board[x][y+i].color != colour) {
-                moves[i] = (Move) {x, y, x, y+i};
+                moves[i-1] = (Move) {x, y, x, y+i};
                 break;
             } else {
                 break;
@@ -227,9 +227,9 @@ Move* generate_legal_moves_for_cell(Square *square) {
         // Move left
         for (int i = 1; i < 8; i++) {
             if (board[x][y-i].piece == EMPTY) {
-                moves[i] = (Move) {x, y, x, y-i};
+                moves[i-1] = (Move) {x, y, x, y-i};
             } else if (board[x][y-i].color != colour) {
-                moves[i] = (Move) {x, y, x, y-i};
+                moves[i-1] = (Move) {x, y, x, y-i};
                 break;
             } else {
                 break;
@@ -239,9 +239,9 @@ Move* generate_legal_moves_for_cell(Square *square) {
         // Move up
         for (int i = 1; i < 8; i++) {
             if (board[x-i][y].piece == EMPTY) {
-                moves[i] = (Move) {x, y, x-i, y};
+                moves[i-1] = (Move) {x, y, x-i, y};
             } else if (board[x-i][y].color != colour) {
-                moves[i] = (Move) {x, y, x-i, y};
+                moves[i-1] = (Move) {x, y, x-i, y};
                 break;
             } else {
                 break;
@@ -251,9 +251,9 @@ Move* generate_legal_moves_for_cell(Square *square) {
         // Move down
         for (int i = 1; i < 8; i++) {
             if (board[x+i][y].piece == EMPTY) {
-                moves[i] = (Move) {x, y, x+i, y};
+                moves[i-1] = (Move) {x, y, x+i, y};
             } else if (board[x+i][y].color != colour) {
-                moves[i] = (Move) {x, y, x+i, y};
+                moves[i-1] = (Move) {x, y, x+i, y};
                 break;
             } else {
                 break;
@@ -264,9 +264,9 @@ Move* generate_legal_moves_for_cell(Square *square) {
         // Move right diagonally
         for (int i = 1; i < 8; i++) {
             if (board[x+i][y+i].piece == EMPTY) {
-                moves[i] = (Move) {x, y, x+i, y+i};
+                moves[i-1] = (Move) {x, y, x+i, y+i};
             } else if (board[x+i][y+i].color != colour) {
-                moves[i] = (Move) {x, y, x+i, y+i};
+                moves[i-1] = (Move) {x, y, x+i, y+i};
                 break;
             } else {
                 break;
@@ -275,9 +275,9 @@ Move* generate_legal_moves_for_cell(Square *square) {
         // Move left diagonally
         for (int i = 1; i < 8; i++) {
             if (board[x-i][y+i].piece == EMPTY) {
-                moves[i] = (Move) {x, y, x-i, y+i};
+                moves[i-1] = (Move) {x, y, x-i, y+i};
             } else if (board[x-i][y+i].color != colour) {
-                moves[i] = (Move) {x, y, x-i, y+i};
+                moves[i-1] = (Move) {x, y, x-i, y+i};
                 break;
             } else {
                 break;
@@ -287,9 +287,9 @@ Move* generate_legal_moves_for_cell(Square *square) {
         // Move back left diagonally
         for (int i = 1; i < 8; i++) {
             if (board[x-i][y-i].piece == EMPTY) {
-                moves[i] = (Move) {x, y, x-i, y-i};
+                moves[i-1] = (Move) {x, y, x-i, y-i};
             } else if (board[x-i][y-i].color != colour) {
-                moves[i] = (Move) {x, y, x-i, y-i};
+                moves[i-1] = (Move) {x, y, x-i, y-i};
                 break;
             } else {
                 break;
@@ -299,9 +299,9 @@ Move* generate_legal_moves_for_cell(Square *square) {
         // Move back right diagonally
         for (int i = 1; i < 8; i++) {
             if (board[x+i][y-i].piece == EMPTY) {
-                moves[i] = (Move) {x, y, x+i, y-i};
+                moves[i-1] = (Move) {x, y, x+i, y-i};
             } else if (board[x+i][y-i].color != colour) {
-                moves[i] = (Move) {x, y, x+i, y-i};
+                moves[i-1] = (Move) {x, y, x+i, y-i};
                 break;
             } else {
                 break;
