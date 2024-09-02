@@ -7,9 +7,95 @@
 
 const int MAX_POTENTIAL_MOVES_FOR_ONE_PIECE = 27;
 const int MAX_POTENTIAL_TOTAL_MOVES_PER_COLOR = 129;
-const int MAX_POTENTIAL_TOTAL_MOVES_PER_COLOR_MINUS_KING = 121;
 
-const int TOTAL_PIECES_PER_COLOR = 16;
+Square* find_piece(int x_coord, int y_coord, Colour colour) {
+    OneColoursPieces *pieces;
+    if(colour == WHITE) {
+        pieces = allPieces.whitePieces;
+    } else {
+        pieces = allPieces.blackPieces;
+    }
+
+    for(int i = 0; i < 8; i++) {
+        Square* pawn = pieces->Pawns[i];
+        if(pawn != NULL && pawn->x_coord == x_coord && pawn->y_coord == y_coord) {
+            return pawn;
+        }
+    }
+
+    for(int i = 0; i < 2; i++) {
+        Square* rook = pieces->Rooks[i];
+        if(rook != NULL && rook->x_coord == x_coord && rook->y_coord == y_coord) {
+            return rook;
+        }
+    }
+
+    for(int i = 0; i < 2; i++) {
+        Square* knight = pieces->Knights[i];
+        if(knight != NULL && knight->x_coord == x_coord && knight->y_coord == y_coord) {
+            return knight;
+        }
+    }
+
+    for(int i = 0; i < 2; i++) {
+        Square* bishop = pieces->Bishops[i];
+        if(bishop != NULL && bishop->x_coord == x_coord && bishop->y_coord == y_coord) {
+            return bishop;
+        }
+    }
+
+    Square* queen = pieces->Queen;
+    if(queen != NULL && queen->x_coord == x_coord && queen->y_coord == y_coord) {
+        return queen;
+    }
+
+    Square* king = pieces->King;
+    if(king != NULL && king->x_coord == x_coord && king->y_coord == y_coord) {
+        return king;
+    }
+    return NULL;
+}
+
+void execute_move(Move move, bool commit) {
+    // TODO: Will this cause two references to the same memory piece?
+    // Consider white pawn[0] taking black pawn[0]
+    // from = white pawn[0]
+    // to = black pawn[0]
+
+    Square* from = &board[move.from_x][move.from_y];
+    Square* to = &board[move.to_x][move.to_y];
+
+    if(to->piece != EMPTY && commit) {
+        Square *piece = find_piece(move.to_x, move.to_y, to->color);
+        if(piece == NULL) {
+            printf("Failed to find piece to remove\n");
+            return;
+        }
+
+        piece = NULL;
+    }
+
+    to->piece = from->piece;
+    to->color = from->color;
+    from->piece = EMPTY;
+    from->color = NONE;
+}
+
+bool ensure_king_is_not_in_check_after_move(Move move, Colour colour) {
+    execute_move(move, false);
+    bool is_check = is_king_in_check(colour);
+
+    // Undo move
+    Square* from = &board[move.to_x][move.to_y];
+    Square* to = &board[move.from_x][move.from_y];
+
+    from->piece = to->piece;
+    from->color = to->color;
+    to->piece = EMPTY;
+    to->color = NONE;
+
+    return !is_check;
+}
 
 /**
  * @return Move array of size 27, either populated or all 0s. Populated entries are not fragmented.
@@ -308,44 +394,75 @@ Move* generate_legal_moves_for_cell(Square *square) {
             }
         }
     } else if(piece == KING) {
+        // TODO: This will result in fragmented array of null moves
         // Move up
-        if (board[x-1][y].piece == EMPTY || board[x-1][y].color != colour) {
-            moves[0] = (Move) {x, y, x-1, y};
+        if (x > 1 && board[x-1][y].piece == EMPTY || board[x-1][y].color != colour) {
+            Move potential_move = (Move) {x, y, x-1, y};
+            if(1==2 && !ensure_king_is_not_in_check_after_move(potential_move, colour)) {
+                moves[0] = potential_move;
+            }
         }
 
         // Move down
-        if (board[x+1][y].piece == EMPTY || board[x+1][y].color != colour) {
-            moves[1] = (Move) {x, y, x+1, y};
+        if (x < 7 && board[x+1][y].piece == EMPTY || board[x+1][y].color != colour) {
+            Move potential_move = (Move) {x, y, x+1, y};
+
+            if(1==2 && !ensure_king_is_not_in_check_after_move(potential_move, colour)) {
+                moves[1] = potential_move;
+            }
         }
 
         // Move left
-        if (board[x][y-1].piece == EMPTY || board[x][y-1].color != colour) {
-            moves[2] = (Move) {x, y, x, y-1};
+        if (y > 1 && board[x][y-1].piece == EMPTY || board[x][y-1].color != colour) {
+            Move potential_move = (Move) {x, y, x, y-1};
+
+            if(1==2 && !ensure_king_is_not_in_check_after_move(potential_move, colour)) {
+                moves[2] = potential_move;
+            }
         }
 
         // Move right
-        if (board[x][y+1].piece == EMPTY || board[x][y+1].color != colour) {
-            moves[3] = (Move) {x, y, x, y+1};
+        if (y < 7 && board[x][y+1].piece == EMPTY || board[x][y+1].color != colour) {
+            Move potential_move = (Move) {x, y, x, y+1};
+
+            if(1==2 && !ensure_king_is_not_in_check_after_move(potential_move, colour)) {
+                moves[3] = potential_move;
+            }
         }
 
         // Move up and right
-        if (board[x-1][y+1].piece == EMPTY || board[x-1][y+1].color != colour) {
-            moves[4] = (Move) {x, y, x-1, y+1};
+        if (x > 1 && y < 7 && board[x-1][y+1].piece == EMPTY || board[x-1][y+1].color != colour) {
+            Move potential_move = (Move) {x, y, x-1, y+1};
+
+            if(1==2 && !ensure_king_is_not_in_check_after_move(potential_move, colour)) {
+                moves[4] = potential_move;
+            }
         }
 
         // Move up and left
-        if (board[x-1][y-1].piece == EMPTY || board[x-1][y-1].color != colour) {
-            moves[5] = (Move) {x, y, x-1, y-1};
+        if (x > 1 && y > 1 && board[x-1][y-1].piece == EMPTY || board[x-1][y-1].color != colour) {
+            Move potential_move = (Move) {x, y, x-1, y-1};
+
+            if(1==2 && !ensure_king_is_not_in_check_after_move(potential_move, colour)) {
+                moves[5] = potential_move;
+            }
         }
 
         // Move down and right
-        if (board[x+1][y+1].piece == EMPTY || board[x+1][y+1].color != colour) {
-            moves[6] = (Move) {x, y, x+1, y+1};
+        if (x < 7 && y < 7 && board[x+1][y+1].piece == EMPTY || board[x+1][y+1].color != colour) {
+            Move potential_move = (Move) {x, y, x+1, y+1};
+
+            if(1==2 && !ensure_king_is_not_in_check_after_move(potential_move, colour)) {
+                moves[6] = potential_move;
+            }
         }
 
         // Move down and left
-        if (board[x+1][y-1].piece == EMPTY || board[x+1][y-1].color != colour) {
-            moves[7] = (Move) {x, y, x+1, y-1};
+        if (y > 1 && x < 7 && board[x+1][y-1].piece == EMPTY || board[x+1][y-1].color != colour) {
+            Move potential_move = (Move) {x, y, x+1, y-1};
+            if(1==2 && !ensure_king_is_not_in_check_after_move(potential_move, colour)) {
+                moves[6] = potential_move;
+            }
         }
     }
 
@@ -366,7 +483,7 @@ void merge_arrays_for_pieces(Move* the_moves, Move* some_moves, int* total_moves
 /**
  * @return Array of moves, limited to 129. Not fragmented, one null value will be the end of the array.
  */
-Move* generate_moves_for_one_color(OneColoursPieces* aColoursPieces){
+Move* generate_moves_for_one_color(OneColoursPieces* aColoursPieces, bool include_king) {
     Move *moves = (Move*) malloc(MAX_POTENTIAL_TOTAL_MOVES_PER_COLOR * sizeof(Move));
     int total_moves_added = 0;
     for(int i = 0; i < 8; i++) {
@@ -421,11 +538,12 @@ Move* generate_moves_for_one_color(OneColoursPieces* aColoursPieces){
     merge_arrays_for_pieces(moves, some_moves, &total_moves_added);
 
     free(some_moves);
-    // TODO: Commented this line out to stop infinite recusrion
-    // This will need to be re-added or the program will move a king into be checked by another king
-    // Move* some_moves = generate_legal_moves_for_cell(aColoursPieces->King);
-//    merge_arrays_for_pieces(moves, some_moves, &total_moves_added);
-//  free(some_moves);
+
+    if(include_king) {
+        Move* kings_moves = generate_legal_moves_for_cell(aColoursPieces->King);
+        merge_arrays_for_pieces(moves, kings_moves, &total_moves_added);
+        free(kings_moves);
+    }
 
     return moves;
 }
@@ -434,8 +552,8 @@ Move* generate_all_legal_moves() {
     Move* moves = (Move*) malloc(MAX_POTENTIAL_TOTAL_MOVES_PER_COLOR * sizeof(Move));
     int total_moves_added = 0;
 
-    Move* whites_moves = generate_moves_for_one_color(allPieces.blackPieces);
-    Move* blacks_moves = generate_moves_for_one_color(allPieces.whitePieces);
+    Move* whites_moves = generate_moves_for_one_color(allPieces.blackPieces, true);
+    Move* blacks_moves = generate_moves_for_one_color(allPieces.whitePieces, true);
 
     for(int j = 0; j < MAX_POTENTIAL_TOTAL_MOVES_PER_COLOR; j++) {
         Move* a_move = &whites_moves[j];
@@ -462,21 +580,38 @@ Move* generate_all_legal_moves() {
     return moves;
 }
 
+int are_coordinates_within1(int x1, int y1, int x2, int y2) {
+    return (abs(x1 - x2) <= 1) && (abs(y1 - y2) <= 1);
+}
+
 bool is_king_in_check(Colour colour) {
     Move* all_legal_moves;
     Square* king;
+    Square* opponentsKing;
+
     if(colour == WHITE) {
-        all_legal_moves = generate_moves_for_one_color(allPieces.blackPieces);
+        all_legal_moves = generate_moves_for_one_color(allPieces.blackPieces, false);
         king = allPieces.whitePieces->King;
+        opponentsKing = allPieces.blackPieces->King;
     }else {
-        all_legal_moves = generate_moves_for_one_color(allPieces.whitePieces);
+        all_legal_moves = generate_moves_for_one_color(allPieces.whitePieces, false);
         king = allPieces.blackPieces->King;
+        opponentsKing = allPieces.whitePieces->King;
     }
 
     if(all_legal_moves == NULL) {
         printf("Failed to generate all legal moves\n");
         free(all_legal_moves);
         return false;
+    }
+
+    int kings_x =king->x_coord;
+    int kings_y = king->y_coord;
+
+    // Is the other king putting our king in check
+    if(are_coordinates_within1(kings_x, kings_y, opponentsKing->x_coord, opponentsKing->y_coord)){
+        free(all_legal_moves);
+        return true;
     }
 
     // TODO: If we instead moved this check inside `generate_all_legal_moves` we could avoid this loop
