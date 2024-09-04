@@ -8,7 +8,7 @@
 const int MAX_POTENTIAL_MOVES_FOR_ONE_PIECE = 27;
 const int MAX_POTENTIAL_TOTAL_MOVES_PER_COLOR = 129;
 
-Square* find_piece(int x_coord, int y_coord, Colour colour) {
+void update_piece_pointer(Square* from, Square* to, Colour colour) {
     OneColoursPieces *pieces;
     if(colour == WHITE) {
         pieces = allPieces.whitePieces;
@@ -16,45 +16,41 @@ Square* find_piece(int x_coord, int y_coord, Colour colour) {
         pieces = allPieces.blackPieces;
     }
 
+    int x_coord = from->x_coord;
+    int y_coord = from->y_coord;
+
     for(int i = 0; i < 8; i++) {
-        Square* pawn = pieces->Pawns[i];
-        if(pawn != NULL && pawn->x_coord == x_coord && pawn->y_coord == y_coord) {
-            return pawn;
+        // TODO: We should really extract the pawn once here, but I cant figure out the pointers
+        if(pieces->Pawns[i] != NULL && pieces->Pawns[i]->x_coord == x_coord && pieces->Pawns[i]->y_coord == y_coord) {
+            pieces->Pawns[i] = to;
         }
     }
 
     for(int i = 0; i < 2; i++) {
-        Square* rook = pieces->Rooks[i];
-        if(rook != NULL && rook->x_coord == x_coord && rook->y_coord == y_coord) {
-            return rook;
+        if(pieces->Rooks[i] != NULL && pieces->Rooks[i]->x_coord == x_coord && pieces->Rooks[i]->y_coord == y_coord) {
+            pieces->Rooks[i] = to;
         }
     }
 
     for(int i = 0; i < 2; i++) {
-        Square* knight = pieces->Knights[i];
-        if(knight != NULL && knight->x_coord == x_coord && knight->y_coord == y_coord) {
-            return knight;
+        if(pieces->Knights[i] != NULL && pieces->Knights[i]->x_coord == x_coord && pieces->Knights[i]->y_coord == y_coord) {
+            pieces->Knights[i] = to;
         }
     }
 
     for(int i = 0; i < 2; i++) {
-        Square* bishop = pieces->Bishops[i];
-        if(bishop != NULL && bishop->x_coord == x_coord && bishop->y_coord == y_coord) {
-            return bishop;
+        if(pieces->Bishops[i] != NULL && pieces->Bishops[i]->x_coord == x_coord && pieces->Bishops[i]->y_coord == y_coord) {
+            pieces->Bishops[i] = to;
         }
     }
 
-    Square* queen = pieces->Queen;
-    if(queen != NULL && queen->x_coord == x_coord && queen->y_coord == y_coord) {
-        return queen;
+    if(pieces->Queen != NULL && pieces->Queen->x_coord == x_coord && pieces->Queen->y_coord == y_coord) {
+        pieces->Queen = to;
     }
 
-    Square* king = pieces->King;
-    if(king != NULL && king->x_coord == x_coord && king->y_coord == y_coord) {
-        return king;
+    if(pieces->King != NULL && pieces->King->x_coord == x_coord && pieces->King->y_coord == y_coord) {
+        pieces->King = to;
     }
-
-    return NULL;
 }
 
 void execute_move(Move move, bool commit) {
@@ -66,13 +62,14 @@ void execute_move(Move move, bool commit) {
     from->piece = EMPTY;
     from->color = NONE;
 
-    Square* moved_piece = find_piece(move.from_x, move.from_y, to->color);
-    if (moved_piece != NULL && commit) {
-        moved_piece = to;
+    if (commit) {
+        update_piece_pointer(from, to, to->color);
     }
+
+    int hi = 2;
 }
 
-bool ensure_king_is_not_in_check_after_move(Move move, Colour colour) {
+bool is_king_in_check_after_move(Move move, Colour colour) {
     execute_move(move, false);
     bool is_check = is_king_in_check(colour);
 
@@ -85,7 +82,7 @@ bool ensure_king_is_not_in_check_after_move(Move move, Colour colour) {
     from->piece = EMPTY;
     from->color = NONE;
 
-    return !is_check;
+    return is_check;
 }
 
 /**
@@ -248,7 +245,7 @@ Move* generate_legal_moves_for_cell(Square *square) {
         // Move left (right for black)
         for (int i = 1; i < 8; i++) {
             if(y-i < 0) {
-                continue;
+                break;
             }
 
             if (board[x][y-i].piece == EMPTY) {
@@ -500,11 +497,10 @@ Move* generate_legal_moves_for_cell(Square *square) {
             }
         }
     } else if(piece == KING) {
-        // TODO: This will result in fragmented array of null moves. As well as rook, bishop, queen and knight
         // Move up
         if (x > 1 && (board[x-1][y].piece == EMPTY || board[x-1][y].color != colour)) {
             Move potential_move = (Move) {x, y, x-1, y};
-            if(!ensure_king_is_not_in_check_after_move(potential_move, colour)) {
+            if(!is_king_in_check_after_move(potential_move, colour)) {
                 moves[index] = potential_move;
                 index++;
             }
@@ -514,7 +510,7 @@ Move* generate_legal_moves_for_cell(Square *square) {
         if (x < 7 && (board[x+1][y].piece == EMPTY || board[x+1][y].color != colour)) {
             Move potential_move = (Move) {x, y, x+1, y};
 
-            if(!ensure_king_is_not_in_check_after_move(potential_move, colour)) {
+            if(!is_king_in_check_after_move(potential_move, colour)) {
                 moves[index] = potential_move;
                 index++;
             }
@@ -524,7 +520,7 @@ Move* generate_legal_moves_for_cell(Square *square) {
         if (y > 1 && (board[x][y-1].piece == EMPTY || board[x][y-1].color != colour)) {
             Move potential_move = (Move) {x, y, x, y-1};
 
-            if(!ensure_king_is_not_in_check_after_move(potential_move, colour)) {
+            if(!is_king_in_check_after_move(potential_move, colour)) {
                 moves[index] = potential_move;
                 index++;
             }
@@ -534,7 +530,7 @@ Move* generate_legal_moves_for_cell(Square *square) {
         if (y < 7 && (board[x][y+1].piece == EMPTY || board[x][y+1].color != colour)) {
             Move potential_move = (Move) {x, y, x, y+1};
 
-            if(!ensure_king_is_not_in_check_after_move(potential_move, colour)) {
+            if(!is_king_in_check_after_move(potential_move, colour)) {
                 moves[index] = potential_move;
                 index++;
             }
@@ -544,7 +540,7 @@ Move* generate_legal_moves_for_cell(Square *square) {
         if (x > 1 && y < 7 && (board[x-1][y+1].piece == EMPTY || board[x-1][y+1].color != colour)) {
             Move potential_move = (Move) {x, y, x-1, y+1};
 
-            if(!ensure_king_is_not_in_check_after_move(potential_move, colour)) {
+            if(!is_king_in_check_after_move(potential_move, colour)) {
                 moves[index] = potential_move;
                 index++;
             }
@@ -554,7 +550,7 @@ Move* generate_legal_moves_for_cell(Square *square) {
         if (x > 1 && y > 1 && (board[x-1][y-1].piece == EMPTY || board[x-1][y-1].color != colour)) {
             Move potential_move = (Move) {x, y, x-1, y-1};
 
-            if(!ensure_king_is_not_in_check_after_move(potential_move, colour)) {
+            if(!is_king_in_check_after_move(potential_move, colour)) {
                 moves[index] = potential_move;
                 index++;
             }
@@ -564,7 +560,7 @@ Move* generate_legal_moves_for_cell(Square *square) {
         if (x < 7 && y < 7 && (board[x+1][y+1].piece == EMPTY || board[x+1][y+1].color != colour)) {
             Move potential_move = (Move) {x, y, x+1, y+1};
 
-            if(!ensure_king_is_not_in_check_after_move(potential_move, colour)) {
+            if(!is_king_in_check_after_move(potential_move, colour)) {
                 moves[index] = potential_move;
                 index++;
             }
@@ -573,7 +569,7 @@ Move* generate_legal_moves_for_cell(Square *square) {
         // Move down and left
         if (y > 1 && x < 7 && (board[x+1][y-1].piece == EMPTY || board[x+1][y-1].color != colour)) {
             Move potential_move = (Move) {x, y, x+1, y-1};
-            if(!ensure_king_is_not_in_check_after_move(potential_move, colour)) {
+            if(!is_king_in_check_after_move(potential_move, colour)) {
                 moves[index] = potential_move;
                 index++;
             }
