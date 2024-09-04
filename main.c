@@ -32,5 +32,5 @@ int main() {
         printf("////////////////////////////////////////\n");
         print_board(NULL);
     }
-    return 0;
+
 }
