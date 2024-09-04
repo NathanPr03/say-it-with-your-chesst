@@ -8,6 +8,8 @@ add_executable(say_it_with_your_chesst
         board.c
         board.h
         move.c
-        move.h)
+        move.h
+        move_picker.c
+        move_picker.h)
 
 

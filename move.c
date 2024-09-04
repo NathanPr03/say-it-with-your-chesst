@@ -53,27 +53,23 @@ Square* find_piece(int x_coord, int y_coord, Colour colour) {
     if(king != NULL && king->x_coord == x_coord && king->y_coord == y_coord) {
         return king;
     }
+
     return NULL;
 }
 
 void execute_move(Move move, bool commit) {
-    Square* from = &board[move.from_x][move.from_y];
-    Square* to = &board[move.to_x][move.to_y];
-
-    if(to->piece != EMPTY && commit) {
-        Square *piece = find_piece(move.to_x, move.to_y, to->color);
-        if(piece == NULL) {
-            printf("Failed to find piece to remove\n");
-            return;
-        }
-
-        piece = NULL;
-    }
+    Square *from = &board[move.from_x][move.from_y];
+    Square *to = &board[move.to_x][move.to_y];
 
     to->piece = from->piece;
     to->color = from->color;
     from->piece = EMPTY;
     from->color = NONE;
+
+    Square* moved_piece = find_piece(move.from_x, move.from_y, to->color);
+    if (moved_piece != NULL && commit) {
+        moved_piece = to;
+    }
 }
 
 bool ensure_king_is_not_in_check_after_move(Move move, Colour colour) {
@@ -84,10 +80,10 @@ bool ensure_king_is_not_in_check_after_move(Move move, Colour colour) {
     Square* from = &board[move.to_x][move.to_y];
     Square* to = &board[move.from_x][move.from_y];
 
-    from->piece = to->piece;
-    from->color = to->color;
-    to->piece = EMPTY;
-    to->color = NONE;
+    to->piece = from->piece;
+    to->color = from->color;
+    from->piece = EMPTY;
+    from->color = NONE;
 
     return !is_check;
 }
@@ -108,7 +104,6 @@ Move* generate_legal_moves_for_cell(Square *square) {
     }
 
     if (piece == PAWN) {
-        //TODO: How do we prevent out of bounds?
         if (colour == WHITE) {
             // Move forward
             if(x > 1 && board[x-1][y].piece == EMPTY) {
@@ -589,6 +584,10 @@ Move* generate_legal_moves_for_cell(Square *square) {
 }
 
 void merge_arrays_for_pieces(Move* the_moves, Move* some_moves, int* total_moves_added) {
+    if(some_moves == NULL) {
+        printf("some_moves in NULL, should this happen \n");
+        return;
+    }
     for(int j = 0; j < MAX_POTENTIAL_MOVES_FOR_ONE_PIECE; j++) {
         Move* a_move = &some_moves[j];
         if (some_moves[j].from_x == 0 && some_moves[j].from_y == 0 &&
@@ -607,11 +606,16 @@ Move* generate_moves_for_one_color(OneColoursPieces* aColoursPieces, bool includ
     int total_moves_added = 0;
     for(int i = 0; i < 8; i++) {
         Square* pawn = aColoursPieces->Pawns[i];
-        if(pawn == NULL) {
+        if(pawn->piece == EMPTY && pawn->color == NONE) {
             continue;
         }
 
         Move* some_moves = generate_legal_moves_for_cell(pawn);
+        if(some_moves == NULL) {
+            printf("Failed to generate legal moves for pawn\n");
+            free(some_moves);
+            return NULL;
+        }
         merge_arrays_for_pieces(moves, some_moves, &total_moves_added);
 
         free(some_moves);

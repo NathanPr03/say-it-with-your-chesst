@@ -17,5 +17,8 @@ bool is_king_in_check(Colour colour);
 
 Move* generate_all_legal_moves();
 
+Move* generate_moves_for_one_color(OneColoursPieces* aColoursPieces, bool include_king);
+
+void execute_move(Move move, bool commit);
 
 #endif //SAY_IT_WITH_YOUR_CHESST_MOVE_H
