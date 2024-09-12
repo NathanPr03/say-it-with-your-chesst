@@ -13,6 +13,9 @@ int main() {
     for(int i = 0; i < 8; i++) {
         Move* all_whites_moves = generate_moves_for_one_color(allPieces.whitePieces, true);
         Move* white_move = bogo_move(all_whites_moves);
+
+        // Print move 10
+        printf("Move 10: %d %d %d %d\n", all_whites_moves[10->from_x, white_move->from_y, white_move->to_x, white_move->to_y);
         execute_move(*white_move, true);
 
 //        free(all_whites_moves);
