@@ -108,6 +108,12 @@ Move* generate_legal_moves_for_cell(Square *square) {
                 index++;
             }
 
+            // Move forward two
+            if(x == 6 && board[x-2][y].piece == EMPTY) {
+                moves[index] = (Move) {x, y, x-2, y};
+                index++;
+            }
+
             // Take to left
             if (x > 1 && y > 1 && board[x-1][y-1].color == BLACK) {
                 moves[index] = (Move) {x, y, x-1, y+1};
@@ -129,6 +135,12 @@ Move* generate_legal_moves_for_cell(Square *square) {
             // Move forward
             if(x < 7 && board[x+1][y].piece == EMPTY) {
                 moves[index] = (Move) {x, y, x+1, y};
+                index++;
+            }
+
+            // Move forward two
+            if(x == 1 && board[x+2][y].piece == EMPTY) {
+                moves[index] = (Move) {x, y, x+2, y};
                 index++;
             }
 
