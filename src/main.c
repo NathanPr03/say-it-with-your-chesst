@@ -1,6 +1,5 @@
 #include <printf.h>
 #include <stdbool.h>
-#include <stdlib.h>
 #include "board.h"
 #include "move.h"
 #include "move_picker.h"
