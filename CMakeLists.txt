@@ -30,6 +30,7 @@ add_executable(tests
         tests/move_test.c
         src/board.c
         src/move.c
+        src/move_picker.c
 )
 
 target_link_libraries(tests ${CUNIT_LIB})

@@ -1,10 +1,12 @@
 #include "move.h"
-#include "board.h"
 #include "move_picker.h"
+#include "board.h"
+#include <printf.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdio.h>
 
+const int MAX_POTENTIAL_MOVES_FOR_ONE_PIECE = 27;
 const int MAX_POTENTIAL_TOTAL_MOVES_PER_COLOR = 129;
 
 void update_piece_pointer(Square* from, Square* to, Colour colour) {
@@ -64,6 +66,8 @@ void execute_move(Move move, bool commit) {
     if (commit) {
         update_piece_pointer(from, to, to->color);
     }
+
+    int hi = 2;
 }
 
 bool is_king_in_check_after_move(Move move, Colour colour) {
@@ -98,10 +102,26 @@ Move* generate_legal_moves_for_cell(Square *square) {
     }
 
     if (piece == PAWN) {
+        // TODO: Implement en passant
         if (colour == WHITE) {
             // Move forward
             if(x > 1 && board[x-1][y].piece == EMPTY) {
-                Move* move = &(Move) {x, y, x-1, y};
+                int move_score = calculate_move_score((Move *) &board[x - 1][y]);
+                moves[index] = (Move) {x, y, x-1, y, move_score};
+
+                index++;
+            }
+
+            // Move forward two
+            if(x == 6 && board[x-2][y].piece == EMPTY) {
+                int move_score = calculate_move_score((Move *) &board[x - 2][y]);
+                moves[index] = (Move) {x, y, x-2, y};
+                index++;
+            }
+
+            // Move forward two
+            if(x == 6 && board[x-2][y].piece == EMPTY) {
+                Move* move = &(Move) {x, y, x-2, y};
                 calculate_move_score(move);
                 moves[index] = *move;
                 index++;
@@ -109,57 +129,64 @@ Move* generate_legal_moves_for_cell(Square *square) {
 
             // Take to left
             if (x > 1 && y > 1 && board[x-1][y-1].color == BLACK) {
-                Move* move = &(Move) {x, y, x-1, y-1};
-                calculate_move_score(move);
-                moves[index] = *move;
+                int move_score = calculate_move_score((Move *) &board[x - 1][y - 1]);
+                moves[index] = (Move) {x, y, x-1, -+1};
                 index++;
             }
 
             // Take to right
             if (x > 1 && y < 7 && board[x-1][y+1].color == BLACK) {
-                Move* move = &(Move) {x, y, x-1, y+1};
-                calculate_move_score(move);
-                moves[index] = *move;
+                int move_score = calculate_move_score((Move *) &board[x - 1][y + 1]);
+                moves[index] = (Move) {x, y, x-1, y+1};
                 index++;
             }
 
             // Promote TODO: Implement promotion
             if(x == 1 && (board[0][y].piece == EMPTY || board[0][y-1].piece == EMPTY || board[0][y+1].piece == EMPTY)) {
-                Move* move = &(Move) {x, y, 99999, 99999};
-                calculate_move_score(move);
-                moves[index] = *move;
+                int move_score = 9999999;
+                moves[index] = (Move) {x, y, 99999, 99999};
                 index++;
             }
         } else if(colour == BLACK) {
             // Move forward
             if(x < 7 && board[x+1][y].piece == EMPTY) {
-                Move* move = &((Move) {x, y, x+1, y});
+                int move_score = calculate_move_score((Move *) &board[x + 1][y]);
+                moves[index] = (Move) {x, y, x+1, y};
+                index++;
+            }
+
+            // Move forward two
+            if(x == 1 && board[x+2][y].piece == EMPTY) {
+                int move_score = calculate_move_score((Move *) &board[x + 2][y]);
+                moves[index] = (Move) {x, y, x+2, y};
+                index++;
+            }
+
+            // Move forward two
+            if(x == 1 && board[x+2][y].piece == EMPTY) {
+                Move* move = &((Move) {x, y, x+2, y});
                 calculate_move_score(move);
                 moves[index] = *move;
                 index++;
             }
-
             // Take to right
             if (x < 7 && y > 1 && board[x+1][y-1].color == WHITE) {
-                Move* move = &((Move) {x, y, x+1, y-1});
-                calculate_move_score(move);
-                moves[index] = *move;
+                int move_score = calculate_move_score((Move *) &board[x + 1][y - 1]);
+                moves[index] = (Move) {x, y, x+1, y-1};
                 index++;
             }
 
             // Take to left
             if (x < 7 && y < 7 && board[x+1][y+1].color == WHITE) {
-                Move* move = &(Move) {x, y, x+1, y+1};
-                calculate_move_score(move);
-                moves[index] = *move;
+                int move_score = calculate_move_score((Move *) &board[x + 1][y + 1]);
+                moves[index] = (Move) {x, y, x+1, y+1};
                 index++;
             }
 
             // Promote TODO: Implement promotion
-            if(x == 6 && (board[7][y].piece == EMPTY || board[7][y-1].piece == EMPTY || board[7][y+1].piece == EMPTY)) {
-                Move* move = &(Move) {x, y, 99999, 99999};
-                calculate_move_score(move);
-                moves[index] = *move;
+            if(x == 6 && (board[7][y].piece == EMPTY || board[7][y-1].piece == EMPTY || board[7][y+1].piece == EMPTY)){
+                int move_score = 9999999;
+                moves[index] = (Move) {x, y, 99999, 99999};
                 index++;
             }
         }
@@ -170,14 +197,12 @@ Move* generate_legal_moves_for_cell(Square *square) {
                 break;
             }
             if (board[x+i][y+i].piece == EMPTY) {
-                Move* move = &(Move) {x, y, x+i, y+i};
-                calculate_move_score(move);
-                moves[index] = *move;
+                int move_score = calculate_move_score((Move *) &board[x + i][y + i]);
+                moves[index] = (Move) {x, y, x+i, y+i, move_score};
                 index++;
             } else if (board[x+i][y+i].color != colour) {
-                Move* move = &(Move) {x, y, x+i, y+i};
-                calculate_move_score(move);
-                moves[index] = *move;
+                int move_score = calculate_move_score((Move *) &board[x + i][y + i]);
+                moves[index] = (Move) {x, y, x+i, y+i, move_score};
                 index++;
                 break;
             } else {
@@ -194,14 +219,12 @@ Move* generate_legal_moves_for_cell(Square *square) {
             }
 
             if (board[x-i][y+i].piece == EMPTY) {
-                Move* move = &(Move) {x, y, x-i, y+i};
-                calculate_move_score(move);
-                moves[index] = *move;
+                int move_score = calculate_move_score((Move *) &board[x - i][y + i]);
+                moves[index] = (Move) {x, y, x-i, y+i, move_score};
                 index++;
             } else if (board[x-i][y+i].color != colour) {
-                Move* move = &(Move) {x, y, x-i, y+i};
-                calculate_move_score(move);
-                moves[index] = *move;
+                int move_score = calculate_move_score((Move *) &board[x - i][y + i]);
+                moves[index] = (Move) {x, y, x-i, y+i, move_score};
                 index++;
                 break;
             } else {
@@ -216,14 +239,12 @@ Move* generate_legal_moves_for_cell(Square *square) {
             }
 
             if (board[x-i][y-i].piece == EMPTY) {
-                Move* move = &(Move) {x, y, x-i, y-i};
-                calculate_move_score(move);
-                moves[index] = *move;
+                int move_score = calculate_move_score((Move *) &board[x - i][y - i]);
+                moves[index] = (Move) {x, y, x-i, y-i, move_score};
                 index++;
             } else if (board[x-i][y-i].color != colour) {
-                Move* move = &(Move) {x, y, x-i, y-i};
-                calculate_move_score(move);
-                moves[index] = *move;
+                int move_score = calculate_move_score((Move *) &board[x - i][y - i]);
+                moves[index] = (Move) {x, y, x-i, y-i, move_score};
                 index++;
                 break;
             } else {
@@ -240,13 +261,11 @@ Move* generate_legal_moves_for_cell(Square *square) {
             }
 
             if (board[x+i][y-i].piece == EMPTY) {
-                Move* move = &(Move) {x, y, x+i, y-i};
-                calculate_move_score(move);
-                moves[index] = *move;
+                int move_score = calculate_move_score((Move *) &board[x + i][y - i]);
+                moves[i-1] = (Move) {x, y, x+i, y-i, move_score};
             } else if (board[x+i][y-i].color != colour) {
-                Move* move = &(Move) {x, y, x+i, y-i};
-                calculate_move_score(move);
-                moves[index] = *move;
+                int move_score = calculate_move_score((Move *) &board[x + i][y - i]);
+                moves[i-1] = (Move) {x, y, x+i, y-i, move_score};
                 break;
             } else {
                 break;
@@ -260,14 +279,12 @@ Move* generate_legal_moves_for_cell(Square *square) {
             }
 
             if (board[x][y+i].piece == EMPTY) {
-                Move* move = &(Move) {x, y, x, y+i};
-                calculate_move_score(move);
-                moves[index] = *move;
+                int move_score = calculate_move_score((Move *) &board[x][y + i]);
+                moves[index] = (Move) {x, y, x, y+i, move_score};
                 index++;
             } else if (board[x][y+i].color != colour) {
-                Move* move = &(Move) {x, y, x, y+i};
-                calculate_move_score(move);
-                moves[index] = *move;
+                int move_score = calculate_move_score((Move *) &board[x][y + i]);
+                moves[index] = (Move) {x, y, x, y+i, move_score};
                 index++;
                 break;
             } else {
@@ -282,14 +299,12 @@ Move* generate_legal_moves_for_cell(Square *square) {
             }
 
             if (board[x][y-i].piece == EMPTY) {
-                Move* move = &(Move) {x, y, x, y-i};
-                calculate_move_score(move);
-                moves[index] = *move;
+                int move_score = calculate_move_score((Move *) &board[x][y - i]);
+                moves[index] = (Move) {x, y, x, y-i, move_score};
                 index++;
             } else if (board[x][y-i].color != colour) {
-                Move* move = &(Move) {x, y, x, y-i};
-                calculate_move_score(move);
-                moves[index] = *move;
+                int move_score = calculate_move_score((Move *) &board[x][y - i]);
+                moves[index] = (Move) {x, y, x, y-i, move_score};
                 index++;
                 break;
             } else {
@@ -304,14 +319,12 @@ Move* generate_legal_moves_for_cell(Square *square) {
             }
 
             if (board[x-i][y].piece == EMPTY) {
-                Move* move = &(Move) {x, y, x-i, y};
-                calculate_move_score(move);
-                moves[index] = *move;
+                int move_score = calculate_move_score((Move *) &board[x - i][y]);
+                moves[index] = (Move) {x, y, x-i, y, move_score};
                 index++;
             } else if (board[x-i][y].color != colour) {
-                Move* move = &(Move) {x, y, x-i, y};
-                calculate_move_score(move);
-                moves[index] = *move;
+                int move_score = calculate_move_score((Move *) &board[x - i][y]);
+                moves[index] = (Move) {x, y, x-i, y, move_score};
                 index++;
                 break;
             } else {
@@ -326,14 +339,12 @@ Move* generate_legal_moves_for_cell(Square *square) {
             }
 
             if (board[x+i][y].piece == EMPTY) {
-                Move* move = &(Move) {x, y, x+i, y};
-                calculate_move_score(move);
-                moves[index] = *move;
+                int move_score = calculate_move_score((Move *) &board[x + i][y]);
+                moves[index] = (Move) {x, y, x+i, y, move_score};
                 index++;
             } else if (board[x+i][y].color != colour) {
-                Move* move = &(Move) {x, y, x+i, y};
-                calculate_move_score(move);
-                moves[index] = *move;
+                int move_score = calculate_move_score((Move *) &board[x + i][y]);
+                moves[index] = (Move) {x, y, x+i, y, move_score};
                 index++;
                 break;
             } else {
@@ -343,79 +354,70 @@ Move* generate_legal_moves_for_cell(Square *square) {
     } else if(piece == KNIGHT) {
         // Move up and right (white inverse)
         if (x < 6 && y < 7 && (board[x+2][y+1].piece == EMPTY || board[x+2][y+1].color != colour)) {
-            Move* move = &(Move) {x, y, x+2, y+1};
-            calculate_move_score(move);
-            moves[index] = *move;
+            int move_score = calculate_move_score((Move *) &board[x + 2][y + 1]);
+            moves[index] = (Move) {x, y, x+2, y+1, move_score};
             index++;
         }
 
         // Move up and left (white inverse)
         if (x < 6 && y > 0 && (board[x+2][y-1].piece == EMPTY || board[x+2][y-1].color != colour)) {
-            Move* move = &(Move) {x, y, x+2, y-1};
-            calculate_move_score(move);
-            moves[index] = *move;
+            int move_score = calculate_move_score((Move *) &board[x + 2][y - 1]);
+            moves[index] = (Move) {x, y, x+2, y-1, move_score};
             index++;
         }
 
         // Move down and right (white inverse)
         if (x > 1 && y < 7 && (board[x-2][y+1].piece == EMPTY || board[x-2][y+1].color != colour)) {
-            Move* move = &(Move) {x, y, x-2, y+1};
-            calculate_move_score(move);
-            moves[index] = *move;
+            int move_score = calculate_move_score((Move *) &board[x - 2][y + 1]);
+            moves[index] = (Move) {x, y, x-2, y+1, move_score};
             index++;
         }
 
         // Move down and left (white inverse)
         if (x > 1 && y > 0 && (board[x-2][y-1].piece == EMPTY || board[x-2][y-1].color != colour)) {
-            Move* move = &(Move) {x, y, x-2, y-1};
-            calculate_move_score(move);
-            moves[index] = *move;
+            int move_score = calculate_move_score((Move *) &board[x - 2][y - 1]);
+            moves[index] = (Move) {x, y, x-2, y-1, move_score};
             index++;
         }
 
         // Move right and up (white inverse)
         if (x < 7 && y < 6 && (board[x+1][y+2].piece == EMPTY || board[x+1][y+2].color != colour)) {
-            Move* move = &(Move) {x, y, x+1, y+2};
-            calculate_move_score(move);
-            moves[index] = *move;
+            int move_score = calculate_move_score((Move *) &board[x + 1][y + 2]);
+            moves[index] = (Move) {x, y, x+1, y+2, move_score};
             index++;
         }
 
         // Move right and up (white inverse)
         if (x < 7 && y > 6 && (board[x+1][y-2].piece == EMPTY || board[x+1][y-2].color != colour)) {
-            Move* move = &(Move) {x, y, x+1, y-2};
-            calculate_move_score(move);
-            moves[index] = *move;
+            int move_score = calculate_move_score((Move *) &board[x + 1][y - 2]);
+            moves[index] = (Move) {x, y, x+1, y-2, move_score};
             index++;
         }
 
         // Move right and down (white inverse)
         if (x > 0 && y < 6 && (board[x-1][y+2].piece == EMPTY || board[x-1][y+2].color != colour)) {
-            Move* move = &(Move) {x, y, x-1, y+2};
-            calculate_move_score(move);
-            moves[index] = *move;
+            int move_score = calculate_move_score((Move *) &board[x - 1][y + 2]);
+            moves[index] = (Move) {x, y, x-1, y+2, move_score};
             index++;
         }
 
         // Move left and down (white inverse)
         if (x > 0 && y > 1 && (board[x-1][y-2].piece == EMPTY || board[x-1][y-2].color != colour)) {
-            Move* move = &(Move) {x, y, x-1, y-2};
-            calculate_move_score(move);
-            moves[index] = *move;
+            int move_score = calculate_move_score((Move *) &board[x - 1][y - 2]);
+            moves[index] = (Move) {x, y, x-1, y-2, move_score};
             index++;
         }
 
         // Move left and up (white inverse)
         if (x < 7 && y > 1 && (board[x+1][y-2].piece == EMPTY || board[x+1][y-2].color != colour)) {
-            Move* move = &(Move) {x, y, x+1, y+2};
-            calculate_move_score(move);
-            moves[index] = *move;
+            int move_score = calculate_move_score((Move *) &board[x + 1][y + 2]);
+            moves[index] = (Move) {x, y, x+1, y+2, move_score};
             index++;
         }
     } else if(piece == QUEEN) {
         // Copy paste of Bishop + Rook logic TODO: Extract
+
         // Rook below
-        // Move right (left for black)
         // Move right (left for black)
         for (int i = 1; i < 8; i++) {
             if(y+i > 7) {
@@ -423,14 +425,12 @@ Move* generate_legal_moves_for_cell(Square *square) {
             }
 
             if (board[x][y+i].piece == EMPTY) {
-                Move* move = &(Move) {x, y, x, y+i};
-                calculate_move_score(move);
-                moves[index] = *move;
+                int move_score = calculate_move_score((Move *) &board[x][y + i]);
+                moves[index] = (Move) {x, y, x, y+i, move_score};
                 index++;
             } else if (board[x][y+i].color != colour) {
-                Move* move = &(Move) {x, y, x, y+i};
-                calculate_move_score(move);
-                moves[index] = *move;
+                int move_score = calculate_move_score((Move *) &board[x][y + i]);
+                moves[index] = (Move) {x, y, x, y+i, move_score};
                 index++;
                 break;
             } else {
@@ -445,14 +445,12 @@ Move* generate_legal_moves_for_cell(Square *square) {
             }
 
             if (board[x][y-i].piece == EMPTY) {
-                Move* move = &(Move) {x, y, x, y-i};
-                calculate_move_score(move);
-                moves[index] = *move;
+                int move_score = calculate_move_score((Move *) &board[x][y - i]);
+                moves[index] = (Move) {x, y, x, y-i, move_score};
                 index++;
             } else if (board[x][y-i].color != colour) {
-                Move* move = &(Move) {x, y, x, y-i};
-                calculate_move_score(move);
-                moves[index] = *move;
+                int move_score = calculate_move_score((Move *) &board[x][y - i]);
+                moves[index] = (Move) {x, y, x, y-i, move_score};
                 index++;
                 break;
             } else {
@@ -467,14 +465,12 @@ Move* generate_legal_moves_for_cell(Square *square) {
             }
 
             if (board[x-i][y].piece == EMPTY) {
-                Move* move = &(Move) {x, y, x-i, y};
-                calculate_move_score(move);
-                moves[index] = *move;
+                int move_score = calculate_move_score((Move *) &board[x - i][y]);
+                moves[index] = (Move) {x, y, x-i, y, move_score};
                 index++;
             } else if (board[x-i][y].color != colour) {
-                Move* move = &(Move) {x, y, x-i, y};
-                calculate_move_score(move);
-                moves[index] = *move;
+                int move_score = calculate_move_score((Move *) &board[x - i][y]);
+                moves[index] = (Move) {x, y, x-i, y, move_score};
                 index++;
                 break;
             } else {
@@ -489,14 +485,12 @@ Move* generate_legal_moves_for_cell(Square *square) {
             }
 
             if (board[x+i][y].piece == EMPTY) {
-                Move* move = &(Move) {x, y, x+i, y};
-                calculate_move_score(move);
-                moves[index] = *move;
+                int move_score = calculate_move_score((Move *) &board[x + i][y]);
+                moves[index] = (Move) {x, y, x+i, y, move_score};
                 index++;
             } else if (board[x+i][y].color != colour) {
-                Move* move = &(Move) {x, y, x+i, y};
-                calculate_move_score(move);
-                moves[index] = *move;
+                int move_score = calculate_move_score((Move *) &board[x + i][y]);
+                moves[index] = (Move) {x, y, x+i, y, move_score};
                 index++;
                 break;
             } else {
@@ -506,20 +500,17 @@ Move* generate_legal_moves_for_cell(Square *square) {
 
         // Bishop below
         // Move right diagonally
-        // Move right diagonally
         for (int i = 1; i < 8; i++) {
             if(x+i > 7 || y+i > 7) {
                 break;
             }
             if (board[x+i][y+i].piece == EMPTY) {
-                Move* move = &(Move) {x, y, x+i, y+i};
-                calculate_move_score(move);
-                moves[index] = *move;
+                int move_score = calculate_move_score((Move *) &board[x + i][y + i]);
+                moves[index] = (Move) {x, y, x+i, y+i, move_score};
                 index++;
             } else if (board[x+i][y+i].color != colour) {
-                Move* move = &(Move) {x, y, x+i, y+i};
-                calculate_move_score(move);
-                moves[index] = *move;
+                int move_score = calculate_move_score((Move *) &board[x + i][y + i]);
+                moves[index] = (Move) {x, y, x+i, y+i, move_score};
                 index++;
                 break;
             } else {
@@ -536,14 +527,12 @@ Move* generate_legal_moves_for_cell(Square *square) {
             }
 
             if (board[x-i][y+i].piece == EMPTY) {
-                Move* move = &(Move) {x, y, x-i, y+i};
-                calculate_move_score(move);
-                moves[index] = *move;
+                int move_score = calculate_move_score((Move *) &board[x - i][y + i]);
+                moves[index] = (Move) {x, y, x-i, y+i, move_score};
                 index++;
             } else if (board[x-i][y+i].color != colour) {
-                Move* move = &(Move) {x, y, x-i, y+i};
-                calculate_move_score(move);
-                moves[index] = *move;
+                int move_score = calculate_move_score((Move *) &board[x - i][y + i]);
+                moves[index] = (Move) {x, y, x-i, y+i, move_score};
                 index++;
                 break;
             } else {
@@ -558,14 +547,12 @@ Move* generate_legal_moves_for_cell(Square *square) {
             }
 
             if (board[x-i][y-i].piece == EMPTY) {
-                Move* move = &(Move) {x, y, x-i, y-i};
-                calculate_move_score(move);
-                moves[index] = *move;
+                int move_score = calculate_move_score((Move *) &board[x - i][y - i]);
+                moves[index] = (Move) {x, y, x-i, y-i, move_score};
                 index++;
             } else if (board[x-i][y-i].color != colour) {
-                Move* move = &(Move) {x, y, x-i, y-i};
-                calculate_move_score(move);
-                moves[index] = *move;
+                int move_score = calculate_move_score((Move *) &board[x - i][y - i]);
+                moves[index] = (Move) {x, y, x-i, y-i, move_score};
                 index++;
                 break;
             } else {
@@ -582,112 +569,94 @@ Move* generate_legal_moves_for_cell(Square *square) {
             }
 
             if (board[x+i][y-i].piece == EMPTY) {
-                Move* move = &(Move) {x, y, x+i, y-i};
-                calculate_move_score(move);
-                moves[index] = *move;
-                index++;
+                int move_score = calculate_move_score((Move *) &board[x + i][y - i]);
+                moves[i-1] = (Move) {x, y, x+i, y-i, move_score};
             } else if (board[x+i][y-i].color != colour) {
-                Move* move = &(Move) {x, y, x+i, y-i};
-                calculate_move_score(move);
-                moves[index] = *move;
+                int move_score = calculate_move_score((Move *) &board[x + i][y - i]);
+                moves[i-1] = (Move) {x, y, x+i, y-i, move_score};
+                break;
+            } else {
+                break;
+            }
+        }
+    } else if (piece == ROOK) {
+        // Move right (left for black)
+        for (int i = 1; i < 8; i++) {
+            if(y+i > 7) {
+                break;
+            }
+
+            if (board[x][y+i].piece == EMPTY) {
+                int move_score = calculate_move_score((Move *) &board[x][y + i]);
+                moves[index] = (Move) {x, y, x, y+i, move_score};
+                index++;
+            } else if (board[x][y+i].color != colour) {
+                int move_score = calculate_move_score((Move *) &board[x][y + i]);
+                moves[index] = (Move) {x, y, x, y+i, move_score};
                 index++;
                 break;
             } else {
                 break;
             }
         }
-    } else if(piece == KING) {
-        // Move up
-        if (x > 1 && (board[x-1][y].piece == EMPTY || board[x-1][y].color != colour)) {
-            Move potential_move = (Move) {x, y, x-1, y};
-            if(!is_king_in_check_after_move(potential_move, colour)) {
-                Move* move = &potential_move;
-                calculate_move_score(move);
-                moves[index] = *move;
+
+        // Move left (right for black)
+        for (int i = 1; i < 8; i++) {
+            if(y-i < 0) {
+                break;
+            }
+
+            if (board[x][y-i].piece == EMPTY) {
+                int move_score = calculate_move_score((Move *) &board[x][y - i]);
+                moves[index] = (Move) {x, y, x, y-i, move_score};
                 index++;
+            } else if (board[x][y-i].color != colour) {
+                int move_score = calculate_move_score((Move *) &board[x][y - i]);
+                moves[index] = (Move) {x, y, x, y-i, move_score};
+                index++;
+                break;
+            } else {
+                break;
             }
         }
 
-        // Move down
-        if (x < 7 && (board[x+1][y].piece == EMPTY || board[x+1][y].color != colour)) {
-            Move potential_move = (Move) {x, y, x+1, y};
+        // Move up (down for black)
+        for (int i = 1; i < 8; i++) {
+            if(x-i < 0) {
+                continue;
+            }
 
-            if(!is_king_in_check_after_move(potential_move, colour)) {
-                Move* move = &potential_move;
-                calculate_move_score(move);
-                moves[index] = *move;
+            if (board[x-i][y].piece == EMPTY) {
+                int move_score = calculate_move_score((Move *) &board[x - i][y]);
+                moves[index] = (Move) {x, y, x-i, y, move_score};
                 index++;
+            } else if (board[x-i][y].color != colour) {
+                int move_score = calculate_move_score((Move *) &board[x - i][y]);
+                moves[index] = (Move) {x, y, x-i, y, move_score};
+                index++;
+                break;
+            } else {
+                break;
             }
         }
 
-        // Move left
-        if (y > 1 && (board[x][y-1].piece == EMPTY || board[x][y-1].color != colour)) {
-            Move potential_move = (Move) {x, y, x, y-1};
-
-            if(!is_king_in_check_after_move(potential_move, colour)) {
-                Move* move = &potential_move;
-                calculate_move_score(move);
-                moves[index] = *move;
-                index++;
+        // Move down (up for black)
+        for (int i = 1; i < 8; i++) {
+            if(x+i > 7) {
+                break;
             }
-        }
 
-        // Move right
-        if (y < 7 && (board[x][y+1].piece == EMPTY || board[x][y+1].color != colour)) {
-            Move potential_move = (Move) {x, y, x, y+1};
-
-            if(!is_king_in_check_after_move(potential_move, colour)) {
-                Move* move = &potential_move;
-                calculate_move_score(move);
-                moves[index] = *move;
+            if (board[x+i][y].piece == EMPTY) {
+                int move_score = calculate_move_score((Move *) &board[x + i][y]);
+                moves[index] = (Move) {x, y, x+i, y, move_score};
                 index++;
-            }
-        }
-
-        // Move up and right
-        if (x > 1 && y < 7 && (board[x-1][y+1].piece == EMPTY || board[x-1][y+1].color != colour)) {
-            Move potential_move = (Move) {x, y, x-1, y+1};
-
-            if(!is_king_in_check_after_move(potential_move, colour)) {
-                Move* move = &potential_move;
-                calculate_move_score(move);
-                moves[index] = *move;
+            } else if (board[x+i][y].color != colour) {
+                int move_score = calculate_move_score((Move *) &board[x + i][y]);
+                moves[index] = (Move) {x, y, x+i, y, move_score};
                 index++;
-            }
-        }
-
-        // Move up and left
-        if (x > 1 && y > 1 && (board[x-1][y-1].piece == EMPTY || board[x-1][y-1].color != colour)) {
-            Move potential_move = (Move) {x, y, x-1, y-1};
-
-            if(!is_king_in_check_after_move(potential_move, colour)) {
-                Move* move = &potential_move;
-                calculate_move_score(move);
-                moves[index] = *move;
-                index++;
-            }
-        }
-
-        // Move down and right
-        if (x < 7 && y < 7 && (board[x+1][y+1].piece == EMPTY || board[x+1][y+1].color != colour)) {
-            Move potential_move = (Move) {x, y, x+1, y+1};
-
-            if(!is_king_in_check_after_move(potential_move, colour)) {
-                Move* move = &potential_move;
-                calculate_move_score(move);
-                moves[index] = *move;
-                index++;
-            }
-        }
-
-        // Move down and left
-        if (y > 1 && x < 7 && (board[x+1][y-1].piece == EMPTY || board[x+1][y-1].color != colour)) {
-            Move potential_move = (Move) {x, y, x+1, y-1};
-            if(!is_king_in_check_after_move(potential_move, colour)) {
-                Move* move = &potential_move;
-                calculate_move_score(move);
-                moves[index] = *move;
-                index++;
+                break;
+            } else {
+                break;
             }
         }
     }
