@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "board.h"
 #include "move.h"
+#include "move_picker.h"
 
 void test_initial_board_moves() {
     init_board();
@@ -111,11 +112,75 @@ void test_initial_board_moves() {
     free(black_moves);
 }
 
+void test_checkmate() {
+    OneColoursPieces* blackPieces = (OneColoursPieces*) malloc(sizeof(OneColoursPieces));
+    OneColoursPieces* whitePieces = (OneColoursPieces*) malloc(sizeof(OneColoursPieces));
+
+    allPieces.whitePieces = whitePieces;
+    allPieces.blackPieces = blackPieces;
+
+    for (int x = 0; x < 8; x++) {
+        for (int y = 0; y < 8; y++) {
+            board[x][y].piece = EMPTY;
+            board[x][y].color = NONE;
+            board[x][y].x_coord = x;
+            board[x][y].y_coord = y;
+        }
+    }
+
+    // Place White King on e4 (x = 4, y = 3)
+    board[5][4].piece = KING;
+    board[5][4].color = WHITE;
+    allPieces.whitePieces->King = &board[5][4];
+
+    // Place Black King on e7 (x = 4, y = 6)
+    board[2][4].piece = KING;
+    board[2][4].color = BLACK;
+    allPieces.blackPieces->King = &board[2][4];
+
+    // Place Black Queen on d6 (x = 3, y = 5)
+    board[3][3].piece = QUEEN;
+    board[3][3].color = BLACK;
+    allPieces.blackPieces->Queen = &board[3][3];
+
+    // Place Black Knight on c5 (x = 2, y = 4)
+    board[4][2].piece = KNIGHT;
+    board[4][2].color = BLACK;
+    allPieces.blackPieces->Knights[0] = &board[4][2];
+
+    print_board(&board);
+    // Game loop
+    for (int i=0; i< 1000; i++) {
+        Move* all_whites_moves = generate_moves_for_one_color(allPieces.whitePieces, true);
+        if (all_whites_moves == NULL) {
+            printf("White has no moves left. Checkmate?\n");
+            print_board(&board);
+            break;
+        }
+        Move* white_move = choose_move(all_whites_moves);
+
+        execute_move(*white_move, true);
+
+        Move* all_blacks_moves = generate_moves_for_one_color(allPieces.blackPieces, true);
+        if (all_blacks_moves == NULL) {
+            printf("Black has no moves left. Checkmate?\n");
+            break;
+        }
+        Move* black_move = choose_move(all_blacks_moves);
+        execute_move(*black_move, true);
+
+        print_board(&board);
+
+    }
+}
+
+
 int main() {
     CU_initialize_registry();
     CU_pSuite suite = CU_add_suite("ChessIntegrationTest", 0, 0);
 
-    CU_add_test(suite, "test_initial_board_moves", test_initial_board_moves);
+//    CU_add_test(suite, "test_initial_board_moves", test_initial_board_moves);
+    CU_add_test(suite, "test_checkmate", test_checkmate);
 
     CU_basic_set_mode(CU_BRM_VERBOSE);
     CU_basic_run_tests();

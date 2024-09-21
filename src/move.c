@@ -66,18 +66,14 @@ void execute_move(Move move, bool commit) {
     }
 }
 
+// Used to see if king would be moving into check. These moves are executed, checked then undone.
 bool is_king_in_check_after_move(Move move, Colour colour) {
-    execute_move(move, false);
+    execute_move(move, true);
     bool is_check = is_king_in_check(colour);
 
     // Undo move
-    Square* from = &board[move.to_x][move.to_y];
-    Square* to = &board[move.from_x][move.from_y];
+    execute_move((Move) {move.to_x, move.to_y, move.from_x, move.from_y}, true);
 
-    to->piece = from->piece;
-    to->color = from->color;
-    from->piece = EMPTY;
-    from->color = NONE;
 
     return is_check;
 }
@@ -732,9 +728,21 @@ void merge_arrays_for_pieces(Move* the_moves, Move* some_moves, int* total_moves
 Move* generate_moves_for_one_color(OneColoursPieces* aColoursPieces, bool include_king) {
     Move *moves = (Move*) malloc(MAX_POTENTIAL_TOTAL_MOVES_PER_COLOR * sizeof(Move));
     int total_moves_added = 0;
+
+    if(include_king) {
+        Move* kings_moves = generate_legal_moves_for_cell(aColoursPieces->King);
+        merge_arrays_for_pieces(moves, kings_moves, &total_moves_added);
+        free(kings_moves);
+    }
+
+    if(include_king && is_king_in_check(aColoursPieces->King->color)) {
+        printf("King is in check, only generating moves for king\n");
+        return moves;
+    }
+
     for(int i = 0; i < 8; i++) {
         Square* pawn = aColoursPieces->Pawns[i];
-        if(pawn->piece == EMPTY && pawn->color == NONE) {
+        if(pawn == NULL) {
             continue;
         }
 
@@ -785,16 +793,13 @@ Move* generate_moves_for_one_color(OneColoursPieces* aColoursPieces, bool includ
         free(some_moves);
     }
 
-    Move* some_moves = generate_legal_moves_for_cell(aColoursPieces->Queen);
-    merge_arrays_for_pieces(moves, some_moves, &total_moves_added);
-
-    free(some_moves);
-
-    if(include_king) {
-        Move* kings_moves = generate_legal_moves_for_cell(aColoursPieces->King);
-        merge_arrays_for_pieces(moves, kings_moves, &total_moves_added);
-        free(kings_moves);
+    Square* queen = aColoursPieces->Queen;
+    if(queen != NULL) {
+        Move* some_moves = generate_legal_moves_for_cell(queen);
+        merge_arrays_for_pieces(moves, some_moves, &total_moves_added);
+        free(some_moves);
     }
+
 
     return moves;
 }
@@ -839,6 +844,7 @@ int are_coordinates_within1(int x1, int y1, int x2, int y2) {
     return (abs(x1 - x2) <= 1) && (abs(y1 - y2) <= 1);
 }
 
+
 bool is_king_in_check(Colour colour) {
     Move* all_legal_moves;
     Square* king;
@@ -860,7 +866,7 @@ bool is_king_in_check(Colour colour) {
         return false;
     }
 
-    int kings_x =king->x_coord;
+    int kings_x = king->x_coord;
     int kings_y = king->y_coord;
 
     // Is the other king putting our king in check

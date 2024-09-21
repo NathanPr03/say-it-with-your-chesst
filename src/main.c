@@ -12,6 +12,10 @@ int main() {
 
     for(int i = 0; i < 50; i++) {
         Move* all_whites_moves = generate_moves_for_one_color(allPieces.whitePieces, true);
+        if (all_whites_moves == NULL) {
+            printf("White has no moves left. Checkmate?\n");
+            break;
+        }
         Move* white_move = choose_move(all_whites_moves);
 
         // Print move 10
