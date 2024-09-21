@@ -114,13 +114,6 @@ Move* generate_legal_moves_for_cell(Square *square) {
 
             // Move forward two
             if(x == 6 && board[x-2][y].piece == EMPTY) {
-                int move_score = calculate_move_score((Move *) &board[x - 2][y]);
-                moves[index] = (Move) {x, y, x-2, y};
-                index++;
-            }
-
-            // Move forward two
-            if(x == 6 && board[x-2][y].piece == EMPTY) {
                 Move* move = &(Move) {x, y, x-2, y};
                 calculate_move_score(move);
                 moves[index] = *move;
@@ -152,13 +145,6 @@ Move* generate_legal_moves_for_cell(Square *square) {
             if(x < 7 && board[x+1][y].piece == EMPTY) {
                 int move_score = calculate_move_score((Move *) &board[x + 1][y]);
                 moves[index] = (Move) {x, y, x+1, y};
-                index++;
-            }
-
-            // Move forward two
-            if(x == 1 && board[x+2][y].piece == EMPTY) {
-                int move_score = calculate_move_score((Move *) &board[x + 2][y]);
-                moves[index] = (Move) {x, y, x+2, y};
                 index++;
             }
 
