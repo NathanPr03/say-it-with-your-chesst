@@ -1,7 +1,8 @@
 #include <stdlib.h>
 #include <time.h>
-#include <printf.h>
 #include "move_picker.h"
+
+const int MAX_POTENTIAL_MOVES_FOR_ONE_PIECE = 27;
 
 int get_random_index(int array_size) {
     // Ensure array_size is greater than 0
@@ -16,6 +17,25 @@ int get_random_index(int array_size) {
     return rand() % array_size;
 }
 
+Move* choose_move(Move* moves) {
+    int top_score = -1;
+    Move* top_move = NULL;
+    for (int i = 0; i < MAX_POTENTIAL_MOVES_FOR_ONE_PIECE; i++) {
+        Move* move = &moves[i];
+
+        if (move->from_x == 0 && move->from_y == 0 && move->to_x == 0 && move->to_y == 0) {
+            return top_move;
+        }
+
+        if (move->score > top_score) {
+            top_score = move->score;
+            top_move = move;
+        }
+    }
+
+    return top_move;
+}
+
 Move* bogo_move(Move* moves) {
     int number_of_moves = 5;
 
@@ -24,36 +44,30 @@ Move* bogo_move(Move* moves) {
     return &moves[random_index];
 }
 
+int move_score_from_capture(Move* move) {
+    int score = 0;
+    int to_x = move->to_x;
+    int to_y = move->to_y;
 
-int calculate_piece_value(Piece pieceToBeTaken) {
-    switch (pieceToBeTaken) {
-        case PAWN:
-            return 1;
-        case KNIGHT:
-            return 3;
-        case BISHOP:
-            return 3;
-        case ROOK:
-            return 5;
-        case QUEEN:
-            return 9;
-        case KING:
-            return 100;
-        default:
-            return 0;
+    Square* square = &board[to_x][to_y];
+
+    if (square->piece == PAWN) {
+      score += 1;
+    } else if (square->piece == KNIGHT) {
+      score += 3;
+    } else if (square->piece == BISHOP) {
+      score += 3;
+    } else if (square->piece == ROOK) {
+        score += 5;
+    } else if (square->piece == KING) {
+        score += 9999999; //TODO: How much should checks be worth?
     }
+
+    return score;
 }
 
-int calculate_move_score(Move* move) {
-    if (move == NULL) {
-        printf("Error: Move is NULL\n");
-        return 0;
-    }
-    int destination_x = move->to_x;
-    int destination_y = move->to_y;
+void calculate_move_score(Move* move) {
+    int score = move_score_from_capture(move);
 
-    Square to_be_taken = board[destination_x][destination_y];
-    int value = calculate_piece_value(to_be_taken.piece);
-
-    return value;
+    move->score = score;
 }
