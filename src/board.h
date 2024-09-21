@@ -1,6 +1,6 @@
 #ifndef SAY_IT_WITH_YOUR_CHESST_BOARD_H
 #define SAY_IT_WITH_YOUR_CHESST_BOARD_H
-
+#pragma once
 typedef enum {
     EMPTY,
     PAWN,

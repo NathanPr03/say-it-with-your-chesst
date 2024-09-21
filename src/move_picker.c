@@ -2,6 +2,8 @@
 #include <time.h>
 #include "move_picker.h"
 
+const int MAX_POTENTIAL_MOVES_FOR_ONE_PIECE = 27;
+
 int get_random_index(int array_size) {
     // Ensure array_size is greater than 0
     if (array_size <= 0) {

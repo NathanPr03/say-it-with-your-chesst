@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include "board.h"
+#pragma once
 
 typedef struct {
     int from_x;
