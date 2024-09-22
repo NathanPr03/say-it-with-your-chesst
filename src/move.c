@@ -74,7 +74,6 @@ bool is_king_in_check_after_move(Move move, Colour colour) {
     // Undo move
     execute_move((Move) {move.to_x, move.to_y, move.from_x, move.from_y}, true);
 
-
     return is_check;
 }
 
@@ -712,6 +711,7 @@ void merge_arrays_for_pieces(Move* the_moves, Move* some_moves, int* total_moves
         printf("some_moves in NULL, should this happen \n");
         return;
     }
+    // TODO: HERE i=14
     for(int j = 0; j < MAX_POTENTIAL_MOVES_FOR_ONE_PIECE; j++) {
         Move* a_move = &some_moves[j];
         if (some_moves[j].from_x == 0 && some_moves[j].from_y == 0 &&

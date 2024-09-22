@@ -27,7 +27,7 @@ void init_board() {
     blackPieces->Queen = &board[0][3];
     board[0][4] = (Square) {KING, BLACK, 0, 4};
     blackPieces->King = &board[0][4];
-    board[0][5] = (Square) {BISHOP, BLACK, 0, 5};
+    board[0][5] = (Square) {BISHOP, BLACK, 0,5};
     blackPieces->Bishops[1] = &board[0][5];
     board[0][6] = (Square) {KNIGHT, BLACK, 0, 6};
     blackPieces->Knights[1] = &board[0][6];
@@ -69,35 +69,28 @@ void print_board(Square (*board_param)[8][8]) {
 
     for (int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; j++) {
-            char prefix[2] = "";
-            if ((*board_param)[i][j].color == WHITE) {
-                prefix[0] = 'W';
-            } else if ((*board_param)[i][j].color == BLACK) {
-                prefix[0] = 'B';
-            }
-            prefix[1] = '\0';
-
             switch ((*board_param)[i][j].piece) {
+
                 case EMPTY:
                     printf("-");
                     break;
                 case PAWN:
-                    printf("%sP", prefix);
+                    printf("P");
                     break;
                 case KNIGHT:
-                    printf("%sN", prefix);
+                    printf("N");
                     break;
                 case BISHOP:
-                    printf("%sB", prefix);
+                    printf("B");
                     break;
                 case ROOK:
-                    printf("%sR", prefix);
+                    printf("R");
                     break;
                 case QUEEN:
-                    printf("%sQ", prefix);
+                    printf("Q");
                     break;
                 case KING:
-                    printf("%sK", prefix);
+                    printf("K");
                     break;
             }
         }

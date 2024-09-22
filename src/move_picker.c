@@ -49,7 +49,15 @@ int move_score_from_capture(Move* move) {
     int to_x = move->to_x;
     int to_y = move->to_y;
 
+    OneColoursPieces other_pieces;
     Square* square = &board[to_x][to_y];
+    Square* current_square = &board[move->from_x][move->from_y];
+
+    if (current_square->color == WHITE) {
+        other_pieces = *allPieces.blackPieces;
+    } else {
+        other_pieces = *allPieces.whitePieces;
+    }
 
     if (square->piece == PAWN) {
       score += 1;
@@ -61,6 +69,10 @@ int move_score_from_capture(Move* move) {
         score += 5;
     } else if (square->piece == KING) {
         score += 9999999; //TODO: How much should checks be worth?
+    } else if (square->piece == QUEEN) {
+        score += 9;
+    } else if (other_pieces.King->x_coord == to_x && other_pieces.King->y_coord == to_y) { // Check
+        score += 10; //TODO: How much should checks be worth?
     }
 
     return score;
@@ -70,4 +82,5 @@ void calculate_move_score(Move* move) {
     int score = move_score_from_capture(move);
 
     move->score = score;
+    int hi = 2;
 }

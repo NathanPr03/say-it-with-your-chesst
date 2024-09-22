@@ -8,27 +8,27 @@
 void test_initial_board_moves() {
     init_board();
 
-    Move* white_moves = generate_moves_for_one_color(allPieces.whitePieces, true);
+    Move *white_moves = generate_moves_for_one_color(allPieces.whitePieces, true);
     CU_ASSERT_PTR_NOT_NULL(white_moves);
 
-    Move* black_moves = generate_moves_for_one_color(allPieces.blackPieces, true);
+    Move *black_moves = generate_moves_for_one_color(allPieces.blackPieces, true);
     CU_ASSERT_PTR_NOT_NULL(black_moves);
 
     // Can pawns move forward
     for (int i = 0; i < 16; i++) {
         int row = i;
-        if(row == 1) {
+        if (row == 1) {
             row = 0;
-        }else{
+        } else {
             row = row / 2;
         }
 
-        if(i % 2 == 0) {
+        if (i % 2 == 0) {
             CU_ASSERT_TRUE(white_moves[i].from_x == 6);
             CU_ASSERT_TRUE(white_moves[i].to_x == 5);
             CU_ASSERT_TRUE(white_moves[i].from_y == row);
             CU_ASSERT_TRUE(white_moves[i].to_y == row);
-        }else if(i % 2 == 1) {
+        } else if (i % 2 == 1) {
             CU_ASSERT_TRUE(white_moves[i].from_x == 6);
             CU_ASSERT_TRUE(white_moves[i].to_x == 4);
             CU_ASSERT_TRUE(white_moves[i].from_y == row);
@@ -38,18 +38,18 @@ void test_initial_board_moves() {
 
     for (int i = 0; i < 16; i++) {
         int row = i;
-        if(row == 1) {
+        if (row == 1) {
             row = 0;
-        }else{
+        } else {
             row = row / 2;
         }
 
-        if(i % 2 == 0) {
+        if (i % 2 == 0) {
             CU_ASSERT_TRUE(black_moves[i].from_x == 1);
             CU_ASSERT_TRUE(black_moves[i].to_x == 2);
             CU_ASSERT_TRUE(black_moves[i].from_y == row);
             CU_ASSERT_TRUE(black_moves[i].to_y == row);
-        }else if(i % 2 == 1) {
+        } else if (i % 2 == 1) {
             CU_ASSERT_TRUE(black_moves[i].from_x == 1);
             CU_ASSERT_TRUE(black_moves[i].to_x == 3);
             CU_ASSERT_TRUE(black_moves[i].from_y == row);
@@ -113,8 +113,72 @@ void test_initial_board_moves() {
 }
 
 void test_checkmate() {
-    OneColoursPieces* blackPieces = (OneColoursPieces*) malloc(sizeof(OneColoursPieces));
-    OneColoursPieces* whitePieces = (OneColoursPieces*) malloc(sizeof(OneColoursPieces));
+    OneColoursPieces *blackPieces = (OneColoursPieces *) malloc(sizeof(OneColoursPieces));
+    OneColoursPieces *whitePieces = (OneColoursPieces *) malloc(sizeof(OneColoursPieces));
+
+    allPieces.whitePieces = whitePieces;
+    allPieces.blackPieces = blackPieces;
+
+    for (int x = 0; x < 8; x++) {
+        for (int y = 0; y < 8; y++) {
+            board[x][y].piece = EMPTY;
+            board[x][y].color = NONE;
+            board[x][y].x_coord = x;
+            board[x][y].y_coord = y;
+        }
+    }
+
+    // Place White King on e4 (x = 4, y = 3)
+    board[7][7].piece = KING;
+    board[7][7].color = WHITE;
+    allPieces.whitePieces->King = &board[7][7];
+
+    // Place Black King on e7 (x = 4, y = 6)
+    board[1][3].piece = KING;
+    board[1][3].color = BLACK;
+    allPieces.blackPieces->King = &board[1][3];
+
+    // Place Black Queen on d6 (x = 3, y = 5)
+    board[7][0].piece = ROOK;
+    board[7][0].color = BLACK;
+    allPieces.blackPieces->Rooks[1] = &board[7][0];
+
+    board[5][6].piece = QUEEN;
+    board[5][6].color = BLACK;
+    allPieces.blackPieces->Queen = &board[5][6];
+
+    // Place Black Knight on c5 (x = 2, y = 4)
+    board[7][6].piece = PAWN;
+    board[7][6].color = WHITE;
+    allPieces.whitePieces->Pawns[0] = &board[7][6];
+
+    print_board(&board);
+    // Game loop
+
+    Move *all_blacks_moves = generate_moves_for_one_color(allPieces.blackPieces, true);
+    if (all_blacks_moves == NULL) {
+        printf("Black has no moves left. Checkmate?\n");
+    }
+    Move *black_move = choose_move(all_blacks_moves);
+    execute_move(*black_move, true);
+
+    print_board(&board);
+
+    Move *all_whites_moves = generate_moves_for_one_color(allPieces.whitePieces, true);
+
+    print_board(&board);
+
+    printf("from_x: %d, from_y: %d, to_x: %d, to_y: %d\n", all_whites_moves->from_x, all_whites_moves->from_y, all_whites_moves->to_x, all_whites_moves->to_y);
+
+    CU_ASSERT_TRUE(all_whites_moves->from_x == 0 &&
+                   all_whites_moves->to_x == 0 &&
+                   all_whites_moves->from_y == 0 &&
+                   all_whites_moves->to_y == 0) // Checkmate
+}
+
+void test_checkmate_2() {
+    OneColoursPieces *blackPieces = (OneColoursPieces *) malloc(sizeof(OneColoursPieces));
+    OneColoursPieces *whitePieces = (OneColoursPieces *) malloc(sizeof(OneColoursPieces));
 
     allPieces.whitePieces = whitePieces;
     allPieces.blackPieces = blackPieces;
@@ -134,14 +198,18 @@ void test_checkmate() {
     allPieces.whitePieces->King = &board[5][4];
 
     // Place Black King on e7 (x = 4, y = 6)
-    board[2][4].piece = KING;
-    board[2][4].color = BLACK;
-    allPieces.blackPieces->King = &board[2][4];
+    board[1][3].piece = KING;
+    board[1][3].color = BLACK;
+    allPieces.blackPieces->King = &board[1][3];
 
     // Place Black Queen on d6 (x = 3, y = 5)
     board[3][3].piece = QUEEN;
     board[3][3].color = BLACK;
     allPieces.blackPieces->Queen = &board[3][3];
+
+    board[3][4].piece = QUEEN;
+    board[3][4].color = WHITE;
+    allPieces.whitePieces->Queen = &board[3][4];
 
     // Place Black Knight on c5 (x = 2, y = 4)
     board[4][2].piece = KNIGHT;
@@ -150,23 +218,25 @@ void test_checkmate() {
 
     print_board(&board);
     // Game loop
-    for (int i=0; i< 1000; i++) {
-        Move* all_whites_moves = generate_moves_for_one_color(allPieces.whitePieces, true);
+    for (int i = 0; i < 100; i++) {
+        Move *all_whites_moves = generate_moves_for_one_color(allPieces.whitePieces, true);
         if (all_whites_moves == NULL) {
             printf("White has no moves left. Checkmate?\n");
             print_board(&board);
             break;
         }
-        Move* white_move = choose_move(all_whites_moves);
+        Move *white_move = choose_move(all_whites_moves);
 
         execute_move(*white_move, true);
 
-        Move* all_blacks_moves = generate_moves_for_one_color(allPieces.blackPieces, true);
+        print_board(&board);
+
+        Move *all_blacks_moves = generate_moves_for_one_color(allPieces.blackPieces, true);
         if (all_blacks_moves == NULL) {
             printf("Black has no moves left. Checkmate?\n");
             break;
         }
-        Move* black_move = choose_move(all_blacks_moves);
+        Move *black_move = choose_move(all_blacks_moves);
         execute_move(*black_move, true);
 
         print_board(&board);
@@ -179,7 +249,7 @@ int main() {
     CU_initialize_registry();
     CU_pSuite suite = CU_add_suite("ChessIntegrationTest", 0, 0);
 
-//    CU_add_test(suite, "test_initial_board_moves", test_initial_board_moves);
+    CU_add_test(suite, "test_initial_board_moves", test_initial_board_moves);
     CU_add_test(suite, "test_checkmate", test_checkmate);
 
     CU_basic_set_mode(CU_BRM_VERBOSE);
