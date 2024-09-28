@@ -38,6 +38,7 @@ void test_initial_board_moves() {
 
     for (int i = 0; i < 16; i++) {
         int row = i;
+
         if (row == 1) {
             row = 0;
         } else {
