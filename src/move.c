@@ -7,8 +7,7 @@
 
 const int MAX_POTENTIAL_TOTAL_MOVES_PER_COLOR = 129;
 
-void update_piece_pointer(Square* from, Square* to, Colour colour) {
-    printf("Updating piece pointer\n");
+Square** update_piece_pointer(Square* from, Square* to, Colour colour) {
     OneColoursPieces *pieces;
     if(colour == WHITE) {
         pieces = allPieces.whitePieces;
@@ -16,7 +15,7 @@ void update_piece_pointer(Square* from, Square* to, Colour colour) {
         pieces = allPieces.blackPieces;
     } else if (colour == NONE) {
         printf("Passed in no colour, returning\n");
-        return;
+        return NULL;
     }
 
     int x_coord = from->x_coord;
@@ -26,39 +25,45 @@ void update_piece_pointer(Square* from, Square* to, Colour colour) {
         // TODO: We should really extract the pawn once here, but I cant figure out the pointers
         if(pieces->Pawns[i] != NULL && pieces->Pawns[i]->x_coord == x_coord && pieces->Pawns[i]->y_coord == y_coord) {
             pieces->Pawns[i] = to;
+            return &pieces->Pawns[i];
         }
     }
 
     for(int i = 0; i < 2; i++) {
         if(pieces->Rooks[i] != NULL && pieces->Rooks[i]->x_coord == x_coord && pieces->Rooks[i]->y_coord == y_coord) {
             pieces->Rooks[i] = to;
+            return &pieces->Rooks[i];
         }
     }
 
     for(int i = 0; i < 2; i++) {
         if(pieces->Knights[i] != NULL && pieces->Knights[i]->x_coord == x_coord && pieces->Knights[i]->y_coord == y_coord) {
             pieces->Knights[i] = to;
+            return &pieces->Knights[i];
         }
     }
 
     for(int i = 0; i < 2; i++) {
         if(pieces->Bishops[i] != NULL && pieces->Bishops[i]->x_coord == x_coord && pieces->Bishops[i]->y_coord == y_coord) {
             pieces->Bishops[i] = to;
+            return &pieces->Bishops[i];
         }
     }
 
     if(pieces->Queen != NULL && pieces->Queen->x_coord == x_coord && pieces->Queen->y_coord == y_coord) {
         pieces->Queen = to;
+        return &pieces->Queen;
     }
 
     if(pieces->King != NULL && pieces->King->x_coord == x_coord && pieces->King->y_coord == y_coord) {
         pieces->King = to;
+        return &pieces->King;
     }
 
-    printf("Finished updating piece pointer\n");
+    return NULL;
 }
 
-void execute_move(Move move, bool commit) {
+Square** execute_move(Move move, bool commit) {
     Square *from = &board[move.from_x][move.from_y];
     Square *to = &board[move.to_x][move.to_y];
 
@@ -66,45 +71,48 @@ void execute_move(Move move, bool commit) {
     printf("From properties: x: %d, y: %d, piece: %d, color: %d\n", from->x_coord, from->y_coord, from->piece, from->color);
     printf("To properties: x: %d, y: %d, piece: %d, color: %d\n", to->x_coord, to->y_coord, to->piece, to->color);
 
-    Square* old = &(Square){EMPTY, to->color, to->x_coord, to->y_coord};
+    Square* old = &(Square){to->piece, to->color, to->x_coord, to->y_coord};
     to->piece = from->piece;
     to->color = from->color;
     from->piece = EMPTY;
     from->color = NONE;
 
+    update_piece_pointer(from, to, to->color);
 
-    if (commit) {
-        update_piece_pointer(from, to, to->color);
+    Square** all_pieces = update_piece_pointer(old, NULL, old->color);
 
-        Square* fake_square = &(Square){EMPTY, NONE, 99999, 99999};
-        update_piece_pointer(old, fake_square, old->color);
+    if (!commit) {
+        if(all_pieces == NULL) {
+            printf("Last square taken was empty\n");
+        }else {
+            return all_pieces;
+        }
     }
 
     to = NULL;
 
-    int hi =2;
+    return NULL;
 }
 
 // Used to see if king would be moving into check. These moves are executed, checked then undone.
 bool is_king_in_check_after_move(Move move, Colour colour) {
-    printf("Checking if king is in check after move\n");
-
-    printf("from_x: %d, from_y: %d, to_x: %d, to_y: %d\n", move.from_x, move.from_y, move.to_x, move.to_y);
-
     Square previous_square_val = board[move.to_x][move.to_y];
     Square* previous_square = &board[move.to_x][move.to_y];
-    execute_move(move, true);
+    Square** just_taken_square = execute_move(move, false);
     bool is_check = is_king_in_check(colour);
 
-    printf("Is in check after move? %d\n", is_check);
-
     // Undo move
-    execute_move((Move) {move.to_x, move.to_y, move.from_x, move.from_y}, true);
+    execute_move((Move) {move.to_x, move.to_y, move.from_x, move.from_y}, false);
     board[move.to_x][move.to_y] = previous_square_val;
-    previous_square->piece = previous_square_val.piece;
-    previous_square->color = previous_square_val.color;
 
-    printf("Finished checking if king is in check after move\n\n");
+    if(just_taken_square != NULL) {
+        *just_taken_square = previous_square;
+    }
+
+    if(is_check) {
+        printf("King would be in check after move\n");
+    }
+
     return is_check;
 }
 
@@ -119,7 +127,6 @@ Move* generate_legal_moves_for_cell(Square *square) {
     int x = square->x_coord;
     int y = square->y_coord;
 
-    printf("About to generate legal moves\n");
     if (piece == EMPTY) {
         printf("Piece is empty\n");
         return NULL;
@@ -297,7 +304,6 @@ Move* generate_legal_moves_for_cell(Square *square) {
             }
         }
     } else if (piece == ROOK) {
-        printf("Rook starting\n");
         // Move right (left for black)
         for (int i = 1; i < 8; i++) {
             if(y+i > 7) {
@@ -319,7 +325,6 @@ Move* generate_legal_moves_for_cell(Square *square) {
                 break;
             }
         }
-        printf("Rook 1\n");
         // Move left (right for black)
         for (int i = 1; i < 8; i++) {
             if(y-i < 0) {
@@ -341,7 +346,6 @@ Move* generate_legal_moves_for_cell(Square *square) {
                 break;
             }
         }
-        printf("Rook 2\n");
         // Move up (down for black)
         for (int i = 1; i < 8; i++) {
             if(x-i < 0) {
@@ -363,7 +367,6 @@ Move* generate_legal_moves_for_cell(Square *square) {
                 break;
             }
         }
-        printf("Rook 3\n");
         // Move down (up for black)
         for (int i = 1; i < 8; i++) {
             if(x+i > 7) {
@@ -385,7 +388,7 @@ Move* generate_legal_moves_for_cell(Square *square) {
                 break;
             }
         }
-        printf("Rook 4\n");
+
     } else if(piece == KNIGHT) {
         // Move up and right (white inverse)
         if (x < 6 && y < 7 && (board[x+2][y+1].piece == EMPTY || board[x+2][y+1].color != colour)) {
@@ -761,9 +764,17 @@ void merge_arrays_for_pieces(Move* the_moves, Move* some_moves, int* total_moves
  * @return Array of moves, limited to 129. Not fragmented, one null value will be the end of the array.
  */
 Move* generate_moves_for_one_color(OneColoursPieces* aColoursPieces, bool include_king) {
-    Move *moves = (Move*) malloc(MAX_POTENTIAL_TOTAL_MOVES_PER_COLOR * sizeof(Move));
+    Move *moves = (Move*) calloc(MAX_POTENTIAL_TOTAL_MOVES_PER_COLOR, sizeof(Move));
+
     int total_moves_added = 0;
-    printf("Generating moves for one color\n");
+
+    if(aColoursPieces->King == allPieces.blackPieces->King) {
+        printf("Generating moves for black \n");
+    } else {
+        printf("Generating moves for white \n");
+    }
+
+    printf("\nFirst move is: %d, %d, %d, %d\n\n", moves[0].from_x, moves[0].from_y, moves[0].to_x, moves[0].to_y);
 
     if(include_king) {
         Square* my_king = aColoursPieces->King;
@@ -773,10 +784,11 @@ Move* generate_moves_for_one_color(OneColoursPieces* aColoursPieces, bool includ
         }
         Move* kings_moves = generate_legal_moves_for_cell(my_king);
         merge_arrays_for_pieces(moves, kings_moves, &total_moves_added);
+        printf("Kings first move: %d, %d, %d, %d\n", kings_moves[0].from_x, kings_moves[0].from_y, kings_moves[0].to_x, kings_moves[0].to_y);
+
         free(kings_moves);
     }
 
-    printf("past king moves\n");
     if(include_king && is_king_in_check(aColoursPieces->King->color)) {
         printf("King is in check, only generating moves for king\n");
         return moves;
@@ -788,17 +800,21 @@ Move* generate_moves_for_one_color(OneColoursPieces* aColoursPieces, bool includ
             continue;
         }
         printf("Generating legal moves for pawn\n");
-        printf("Pawn x: %d, y: %d, piece: %d, color: %d\n", pawn->x_coord, pawn->y_coord, pawn->piece, pawn->color);
+
         Move* some_moves = generate_legal_moves_for_cell(pawn);
         if(some_moves == NULL) {
             printf("Failed to generate legal moves for pawn\n");
             free(some_moves);
             return NULL;
         }
+
+        // Print first move
+        printf("First pawn move: %d, %d, %d, %d\n", some_moves[0].from_x, some_moves[0].from_y, some_moves[0].to_x, some_moves[0].to_y);
         merge_arrays_for_pieces(moves, some_moves, &total_moves_added);
 
         free(some_moves);
     }
+
     printf("past pawns\n");
     for(int i = 0; i < 2; i++) {
         Square* rook = aColoursPieces->Rooks[i];
@@ -806,25 +822,12 @@ Move* generate_moves_for_one_color(OneColoursPieces* aColoursPieces, bool includ
             continue;
         }
 
-        printf("Generating legal moves for rook\n");
-        printf("Rook x: %d, y: %d, piece: %d, color: %d\n", rook->x_coord, rook->y_coord, rook->piece, rook->color);
-        Square* the_rook = allPieces.blackPieces->Rooks[0];
-        if(the_rook != NULL){
-            printf("Rook x: %d, y: %d, piece: %d, color: %d\n", the_rook->x_coord, the_rook->y_coord, the_rook->piece, the_rook->color);
-        }
-
-        Square* the_other_rook = allPieces.whitePieces->Rooks[1];
-        if(the_other_rook != NULL){
-            printf("Rook x: %d, y: %d, piece: %d, color: %d\n", the_other_rook->x_coord, the_other_rook->y_coord, the_other_rook->piece, the_other_rook->color);
-        }
         Move* some_moves = generate_legal_moves_for_cell(rook);
-        printf("Generated legal moves for rook\n");
         merge_arrays_for_pieces(moves, some_moves, &total_moves_added);
-        printf("Merged arrays for pieces\n");
 
         free(some_moves);
     }
-    printf("past rooks\n");
+
     for(int i = 0; i < 2; i++) {
         Square* knight = aColoursPieces->Knights[i];
         if(knight == NULL) {
@@ -836,7 +839,7 @@ Move* generate_moves_for_one_color(OneColoursPieces* aColoursPieces, bool includ
 
         free(some_moves);
     }
-    printf("past knights\n");
+
     for(int i = 0; i < 2; i++) {
         Square* bishop = aColoursPieces->Bishops[i];
         if(bishop == NULL) {
@@ -848,53 +851,57 @@ Move* generate_moves_for_one_color(OneColoursPieces* aColoursPieces, bool includ
 
         free(some_moves);
     }
-    printf("past bishops\n");
+
     Square* queen = aColoursPieces->Queen;
     if(queen != NULL) {
         Move* some_moves = generate_legal_moves_for_cell(queen);
         merge_arrays_for_pieces(moves, some_moves, &total_moves_added);
         free(some_moves);
     }
-    printf("past queen\n");
-    printf("Finished generating moves for one color\n");
+
+    if(aColoursPieces->King == allPieces.blackPieces->King) {
+        printf("Finished generating moves for black \n");
+    } else {
+        printf("Finished moves for white \n");
+    }
     return moves;
 }
 
-Move* generate_all_legal_moves() {
-    Move* moves = (Move*) malloc(MAX_POTENTIAL_TOTAL_MOVES_PER_COLOR * sizeof(Move));
-    int total_moves_added = 0;
-
-    Move* whites_moves = generate_moves_for_one_color(allPieces.whitePieces, true);
-    Move* blacks_moves = generate_moves_for_one_color(allPieces.blackPieces, true);
-
-    for(int j = 0; j < MAX_POTENTIAL_TOTAL_MOVES_PER_COLOR; j++) {
-        Move* a_move = &whites_moves[j];
-
-        if (a_move->from_x == 0 && a_move->from_y == 0 &&
-            a_move->to_x == 0 && a_move->to_y == 0) {
-            break; // Skip empty moves
-        }
-        moves[total_moves_added] = *a_move;
-        total_moves_added++;
-    }
-
-    free(whites_moves);
-
-    for(int j = 0; j < MAX_POTENTIAL_TOTAL_MOVES_PER_COLOR; j++) {
-        Move* a_move = &blacks_moves[j];
-
-        if (a_move->from_x == 0 && a_move->from_y == 0 &&
-                a_move->to_x == 0 && a_move->to_y == 0) {
-            break; // Skip empty moves
-        }
-        moves[total_moves_added] = *a_move;
-        total_moves_added++;
-    }
-
-    free(blacks_moves);
-
-    return moves;
-}
+//Move* generate_all_legal_moves() {
+//    Move* moves = (Move*) malloc(MAX_POTENTIAL_TOTAL_MOVES_PER_COLOR * sizeof(Move));
+//    int total_moves_added = 0;
+//
+//    Move* whites_moves = generate_moves_for_one_color(allPieces.whitePieces, true);
+//    Move* blacks_moves = generate_moves_for_one_color(allPieces.blackPieces, true);
+//
+//    for(int j = 0; j < MAX_POTENTIAL_TOTAL_MOVES_PER_COLOR; j++) {
+//        Move* a_move = &whites_moves[j];
+//
+//        if (a_move->from_x == 0 && a_move->from_y == 0 &&
+//            a_move->to_x == 0 && a_move->to_y == 0) {
+//            break; // Skip empty moves
+//        }
+//        moves[total_moves_added] = *a_move;
+//        total_moves_added++;
+//    }
+//
+//    free(whites_moves);
+//
+//    for(int j = 0; j < MAX_POTENTIAL_TOTAL_MOVES_PER_COLOR; j++) {
+//        Move* a_move = &blacks_moves[j];
+//
+//        if (a_move->from_x == 0 && a_move->from_y == 0 &&
+//                a_move->to_x == 0 && a_move->to_y == 0) {
+//            break; // Skip empty moves
+//        }
+//        moves[total_moves_added] = *a_move;
+//        total_moves_added++;
+//    }
+//
+//    free(blacks_moves);
+//
+//    return moves;
+//}
 
 int are_coordinates_within1(int x1, int y1, int x2, int y2) {
     return (abs(x1 - x2) <= 1) && (abs(y1 - y2) <= 1);

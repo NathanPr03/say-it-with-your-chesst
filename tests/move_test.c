@@ -153,8 +153,8 @@ void test_checkmate() {
     allPieces.whitePieces->Pawns[0] = &board[7][6];
 
     print_board(&board);
-    // Game loop
 
+    // Game loop
     Move *all_blacks_moves = generate_moves_for_one_color(allPieces.blackPieces, true);
     if (all_blacks_moves == NULL) {
         printf("Black has no moves left. Checkmate?\n");
@@ -162,11 +162,10 @@ void test_checkmate() {
     Move *black_move = choose_move(all_blacks_moves);
     execute_move(*black_move, true);
 
-    print_board(&board);
+    free(all_blacks_moves);
 
+    printf("Blacks turn finished\n\n");
     Move *all_whites_moves = generate_moves_for_one_color(allPieces.whitePieces, true);
-
-    print_board(&board);
 
     printf("from_x: %d, from_y: %d, to_x: %d, to_y: %d\n", all_whites_moves->from_x, all_whites_moves->from_y, all_whites_moves->to_x, all_whites_moves->to_y);
 
@@ -175,75 +174,6 @@ void test_checkmate() {
                    all_whites_moves->from_y == 0 &&
                    all_whites_moves->to_y == 0) // Checkmate
 }
-
-void test_checkmate_2() {
-    OneColoursPieces *blackPieces = (OneColoursPieces *) malloc(sizeof(OneColoursPieces));
-    OneColoursPieces *whitePieces = (OneColoursPieces *) malloc(sizeof(OneColoursPieces));
-
-    allPieces.whitePieces = whitePieces;
-    allPieces.blackPieces = blackPieces;
-
-    for (int x = 0; x < 8; x++) {
-        for (int y = 0; y < 8; y++) {
-            board[x][y].piece = EMPTY;
-            board[x][y].color = NONE;
-            board[x][y].x_coord = x;
-            board[x][y].y_coord = y;
-        }
-    }
-
-    // Place White King on e4 (x = 4, y = 3)
-    board[5][4].piece = KING;
-    board[5][4].color = WHITE;
-    allPieces.whitePieces->King = &board[5][4];
-
-    // Place Black King on e7 (x = 4, y = 6)
-    board[1][3].piece = KING;
-    board[1][3].color = BLACK;
-    allPieces.blackPieces->King = &board[1][3];
-
-    // Place Black Queen on d6 (x = 3, y = 5)
-    board[3][3].piece = QUEEN;
-    board[3][3].color = BLACK;
-    allPieces.blackPieces->Queen = &board[3][3];
-
-    board[3][4].piece = QUEEN;
-    board[3][4].color = WHITE;
-    allPieces.whitePieces->Queen = &board[3][4];
-
-    // Place Black Knight on c5 (x = 2, y = 4)
-    board[4][2].piece = KNIGHT;
-    board[4][2].color = BLACK;
-    allPieces.blackPieces->Knights[0] = &board[4][2];
-
-    print_board(&board);
-    // Game loop
-    for (int i = 0; i < 100; i++) {
-        Move *all_whites_moves = generate_moves_for_one_color(allPieces.whitePieces, true);
-        if (all_whites_moves == NULL) {
-            printf("White has no moves left. Checkmate?\n");
-            print_board(&board);
-            break;
-        }
-        Move *white_move = choose_move(all_whites_moves);
-
-        execute_move(*white_move, true);
-
-        print_board(&board);
-
-        Move *all_blacks_moves = generate_moves_for_one_color(allPieces.blackPieces, true);
-        if (all_blacks_moves == NULL) {
-            printf("Black has no moves left. Checkmate?\n");
-            break;
-        }
-        Move *black_move = choose_move(all_blacks_moves);
-        execute_move(*black_move, true);
-
-        print_board(&board);
-
-    }
-}
-
 
 int main() {
     CU_initialize_registry();
