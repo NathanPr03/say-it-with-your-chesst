@@ -179,7 +179,7 @@ int main() {
     CU_initialize_registry();
     CU_pSuite suite = CU_add_suite("ChessIntegrationTest", 0, 0);
 
-//    CU_add_test(suite, "test_initial_board_moves", test_initial_board_moves);
+    CU_add_test(suite, "test_initial_board_moves", test_initial_board_moves);
     CU_add_test(suite, "test_checkmate", test_checkmate);
 
     CU_basic_set_mode(CU_BRM_VERBOSE);
