@@ -10,7 +10,7 @@ typedef struct {
     int from_y;
     int to_x;
     int to_y;
-    int score;
+    double score;
 } Move;
 
 bool is_king_in_check(Colour colour);

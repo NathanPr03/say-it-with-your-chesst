@@ -1,24 +1,11 @@
-#include <stdlib.h>
 #include <time.h>
 #include "move_picker.h"
+#include "postional_score_matrices.h"
 
 const int MAX_POTENTIAL_MOVES_FOR_ONE_PIECE = 27;
 
-int get_random_index(int array_size) {
-    // Ensure array_size is greater than 0
-    if (array_size <= 0) {
-        return -1;  // Error: Invalid array_size
-    }
-
-    // Seed the random number generator
-    srand(time(NULL));
-
-    // Generate a random number between 0 and array_size - 1
-    return rand() % array_size;
-}
-
 Move* choose_move(Move* moves) {
-    int top_score = -1;
+    double top_score = -100;
     Move* top_move = NULL;
     for (int i = 0; i < MAX_POTENTIAL_MOVES_FOR_ONE_PIECE; i++) {
         Move* move = &moves[i];
@@ -36,16 +23,8 @@ Move* choose_move(Move* moves) {
     return top_move;
 }
 
-Move* bogo_move(Move* moves) {
-    int number_of_moves = 5;
-
-    int random_index = get_random_index(number_of_moves);
-
-    return &moves[random_index];
-}
-
-int move_score_from_capture(Move* move) {
-    int score = 0;
+double move_score_from_capture(Move* move) {
+    double score = 0;
     int to_x = move->to_x;
     int to_y = move->to_y;
 
@@ -78,9 +57,54 @@ int move_score_from_capture(Move* move) {
     return score;
 }
 
-void calculate_move_score(Move* move) {
-    int score = move_score_from_capture(move);
+double positional_move_score(Move* move) {
+    double score = 0;
 
+    int from_x = move->from_x;
+    int from_y = move->from_y;
+
+    int to_x = move->to_x;
+    int to_y = move->to_y;
+
+
+    Square* current_square = &board[move->from_x][move->from_y];
+
+    if(current_square->color == WHITE) {
+        if (current_square->piece == PAWN) {
+            score += white_pawn_position_score[to_x][to_y] - white_pawn_position_score[from_x][from_y];
+        } else if (current_square->piece == KNIGHT) {
+            score += white_knight_position_score[to_x][to_y] - white_knight_position_score[from_x][from_y];
+        } else if (current_square->piece == BISHOP) {
+            score += white_bishop_position_score[to_x][to_y] - white_bishop_position_score[from_x][from_y];
+        } else if (current_square->piece == ROOK) {
+            score += white_rook_position_score[to_x][to_y] - white_rook_position_score[from_x][from_y];
+        } else if (current_square->piece == KING) {
+            score += white_king_position_score[to_x][to_y] - white_king_position_score[from_x][from_y];
+        } else if (current_square->piece == QUEEN) {
+            score += white_queen_position_score[to_x][to_y] - white_queen_position_score[from_x][from_y];
+        }
+    }else if(current_square->color == BLACK) {
+        if (current_square->piece == PAWN) {
+            score += black_pawn_position_score[to_x][to_y] - black_pawn_position_score[from_x][from_y];
+        } else if (current_square->piece == KNIGHT) {
+            score += black_knight_position_score[to_x][to_y] - black_knight_position_score[from_x][from_y];
+        } else if (current_square->piece == BISHOP) {
+            score += black_bishop_position_score[to_x][to_y] - black_bishop_position_score[from_x][from_y];
+        } else if (current_square->piece == ROOK) {
+            score += black_rook_position_score[to_x][to_y] - black_rook_position_score[from_x][from_y];
+        } else if (current_square->piece == KING) {
+            score += black_king_position_score[to_x][to_y] - black_king_position_score[from_x][from_y];
+        } else if (current_square->piece == QUEEN) {
+            score += black_queen_position_score[to_x][to_y] - black_queen_position_score[from_x][from_y];
+        }
+    }
+
+
+    return score;
+}
+
+void calculate_move_score(Move* move) {
+    double score = move_score_from_capture(move);
+    score += positional_move_score(move);
     move->score = score;
-    int hi = 2;
 }

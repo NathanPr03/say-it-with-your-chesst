@@ -69,30 +69,57 @@ void print_board(Square (*board_param)[8][8]) {
 
     for (int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; j++) {
-            switch ((*board_param)[i][j].piece) {
-
-                case EMPTY:
-                    printf("-");
-                    break;
-                case PAWN:
-                    printf("P");
-                    break;
-                case KNIGHT:
-                    printf("N");
-                    break;
-                case BISHOP:
-                    printf("B");
-                    break;
-                case ROOK:
-                    printf("R");
-                    break;
-                case QUEEN:
-                    printf("Q");
-                    break;
-                case KING:
-                    printf("K");
-                    break;
+            Square square = (*board_param)[i][j];
+            if(square.color == BLACK) {
+                switch (square.piece) {
+                    case EMPTY:
+                        printf("-");
+                        break;
+                    case PAWN:
+                        printf("\u2659");
+                        break;
+                    case KNIGHT:
+                        printf("\u2658");
+                        break;
+                    case BISHOP:
+                        printf("\u2657");
+                        break;
+                    case ROOK:
+                        printf("\u2656");
+                        break;
+                    case QUEEN:
+                        printf("\u2655");
+                        break;
+                    case KING:
+                        printf("\u2654");
+                        break;
+                }
+            } else {
+                switch (square.piece) {
+                    case EMPTY:
+                        printf("-");
+                        break;
+                    case PAWN:
+                        printf("\u265F");
+                        break;
+                    case KNIGHT:
+                        printf("\u265E");
+                        break;
+                    case BISHOP:
+                        printf("\u265D");
+                        break;
+                    case ROOK:
+                        printf("\u265C");
+                        break;
+                    case QUEEN:
+                        printf("\u265B");
+                        break;
+                    case KING:
+                        printf("\u265A");
+                        break;
+                }
             }
+
         }
         printf("\n");
     }

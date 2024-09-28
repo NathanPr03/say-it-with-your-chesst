@@ -9,6 +9,7 @@ add_library(say_it_with_your_chesst_lib
         src/board.c
         src/move.c
         src/move_picker.c
+        src/postional_score_matrices.c
 )
 
 target_include_directories(say_it_with_your_chesst_lib PUBLIC ${PROJECT_SOURCE_DIR}/src)
@@ -31,6 +32,7 @@ add_executable(tests
         src/board.c
         src/move.c
         src/move_picker.c
+        src/postional_score_matrices.c
 )
 
 target_link_libraries(tests ${CUNIT_LIB})
