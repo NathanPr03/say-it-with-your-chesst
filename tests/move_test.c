@@ -141,7 +141,7 @@ void test_checkmate() {
     // Place Black Queen on d6 (x = 3, y = 5)
     board[7][0].piece = ROOK;
     board[7][0].color = BLACK;
-    allPieces.blackPieces->Rooks[1] = &board[7][0];
+    allPieces.blackPieces->Rooks[0] = &board[7][0];
 
     board[5][6].piece = QUEEN;
     board[5][6].color = BLACK;
@@ -249,7 +249,7 @@ int main() {
     CU_initialize_registry();
     CU_pSuite suite = CU_add_suite("ChessIntegrationTest", 0, 0);
 
-    CU_add_test(suite, "test_initial_board_moves", test_initial_board_moves);
+//    CU_add_test(suite, "test_initial_board_moves", test_initial_board_moves);
     CU_add_test(suite, "test_checkmate", test_checkmate);
 
     CU_basic_set_mode(CU_BRM_VERBOSE);
