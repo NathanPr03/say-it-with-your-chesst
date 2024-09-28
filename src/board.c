@@ -62,6 +62,7 @@ void init_board() {
 }
 
 void print_board(Square (*board_param)[8][8]) {
+    printf("\n");
     if (board_param == NULL) {
         board_param = &board;
     }
@@ -69,6 +70,7 @@ void print_board(Square (*board_param)[8][8]) {
     for (int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; j++) {
             switch ((*board_param)[i][j].piece) {
+
                 case EMPTY:
                     printf("-");
                     break;

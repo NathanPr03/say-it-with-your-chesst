@@ -10,12 +10,15 @@ int main() {
     init_board();
     print_board(NULL);
 
-    for(int i = 0; i < 8; i++) {
+    for(int i = 0; i < 50; i++) {
         Move* all_whites_moves = generate_moves_for_one_color(allPieces.whitePieces, true);
-        Move* white_move = bogo_move(all_whites_moves);
+        if (all_whites_moves == NULL) {
+            printf("White has no moves left. Checkmate?\n");
+            break;
+        }
+        Move* white_move = choose_move(all_whites_moves);
 
         // Print move 10
-        printf("Move 10: %d %d %d %d\n", all_whites_moves[10->from_x, white_move->from_y, white_move->to_x, white_move->to_y);
         execute_move(*white_move, true);
 
 //        free(all_whites_moves);
@@ -25,7 +28,7 @@ int main() {
         print_board(NULL);
 
         Move* all_blacks_moves = generate_moves_for_one_color(allPieces.blackPieces, true);
-        Move* black_move = bogo_move(all_blacks_moves);
+        Move* black_move = choose_move(all_blacks_moves);
         execute_move(*black_move, true);
 
 //        free(all_blacks_moves);
