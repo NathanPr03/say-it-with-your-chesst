@@ -1,14 +1,15 @@
 #include <printf.h>
 #include <stdlib.h>
 #include "board.h"
+#include "postional_score_matrices.h"
 
 Square board[8][8];
 
 AllPieces allPieces;
 
 void init_board() {
-    OneColoursPieces* blackPieces = (OneColoursPieces*) malloc(sizeof(OneColoursPieces));
-    OneColoursPieces* whitePieces = (OneColoursPieces*) malloc(sizeof(OneColoursPieces));
+    OneColoursPieces* blackPieces = (OneColoursPieces*) calloc(1, sizeof(OneColoursPieces));
+    OneColoursPieces* whitePieces = (OneColoursPieces*) calloc(1, sizeof(OneColoursPieces));
 
     for (int i = 0; i < 8; i++) {
         board[1][i] = (Square) {PAWN, BLACK, 1, i};
@@ -123,4 +124,90 @@ void print_board(Square (*board_param)[8][8]) {
         }
         printf("\n");
     }
+}
+
+double calculate_board_score(Square (*board_param)[8][8]) {
+    double score = 0;
+    double white_score = 0;
+    double black_score = 0;
+    OneColoursPieces *pieces;
+    double (*pawn_position_score)[8];
+    double (*knight_position_score)[8];
+    double (*bishop_position_score)[8];
+    double (*rook_position_score)[8];
+    double (*queen_position_score)[8];
+    double (*king_position_score)[8];
+
+    if(board_param == NULL) {
+        board_param = &board;
+    }
+
+
+    for (int j = 0; j < 2; ++j) {
+        if (j == 0) {
+            pieces = allPieces.whitePieces;
+            pawn_position_score = white_pawn_position_score;
+            knight_position_score = white_knight_position_score;
+            bishop_position_score = white_bishop_position_score;
+            rook_position_score = white_rook_position_score;
+            queen_position_score = white_queen_position_score;
+            king_position_score = white_king_position_score;
+        } else {
+            pieces = allPieces.blackPieces;
+            pawn_position_score = black_pawn_position_score;
+            knight_position_score = black_knight_position_score;
+            bishop_position_score = black_bishop_position_score;
+            rook_position_score = black_rook_position_score;
+            queen_position_score = black_queen_position_score;
+            king_position_score = black_king_position_score;
+        }
+
+        score = 0;
+        for (int i = 0; i < 8; i++) {
+            // TODO: We should really extract the pawn once here, but I cant figure out the pointers
+            if (pieces->Pawns[i] != NULL) {
+                score += 1;
+                score += pawn_position_score[pieces->Pawns[i]->x_coord][pieces->Pawns[i]->y_coord];
+            }
+        }
+
+        for (int i = 0; i < 2; i++) {
+            if (pieces->Rooks[i] != NULL) {
+                score += 5;
+                score += rook_position_score[pieces->Rooks[i]->x_coord][pieces->Rooks[i]->y_coord];
+            }
+        }
+
+        for (int i = 0; i < 2; i++) {
+            if (pieces->Knights[i] != NULL) {
+                score += 3;
+                score += knight_position_score[pieces->Knights[i]->x_coord][pieces->Knights[i]->y_coord];
+            }
+        }
+
+        for (int i = 0; i < 2; i++) {
+            if (pieces->Bishops[i] != NULL) {
+                score += 3;
+                score += bishop_position_score[pieces->Bishops[i]->x_coord][pieces->Bishops[i]->y_coord];
+            }
+        }
+
+        if (pieces->Queen != NULL) {
+            score += 9;
+            score += queen_position_score[pieces->Queen->x_coord][pieces->Queen->y_coord];
+        }
+
+        if (pieces->King != NULL) {
+            score += 100;
+            score += king_position_score[pieces->King->x_coord][pieces->King->y_coord];
+        }
+
+        if (j == 0) {
+            white_score = score;
+        } else {
+            black_score = score;
+        }
+    }
+
+    return white_score - black_score;
 }

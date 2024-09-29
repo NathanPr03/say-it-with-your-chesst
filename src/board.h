@@ -43,5 +43,6 @@ extern Square board[8][8];
 
 void init_board();
 void print_board(Square (*board_param)[8][8]);
+double calculate_board_score(Square (*board_param)[8][8]);
 
 #endif

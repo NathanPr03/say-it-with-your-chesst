@@ -10,6 +10,8 @@ add_library(say_it_with_your_chesst_lib
         src/move.c
         src/move_picker.c
         src/postional_score_matrices.c
+        src/minimax.c
+        src/minimax.h
 )
 
 target_include_directories(say_it_with_your_chesst_lib PUBLIC ${PROJECT_SOURCE_DIR}/src)

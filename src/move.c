@@ -66,7 +66,6 @@ Square** execute_move(Move move, bool commit) {
     Square *from = &board[move.from_x][move.from_y];
     Square *to = &board[move.to_x][move.to_y];
 
-
     Square* old = &(Square){to->piece, to->color, to->x_coord, to->y_coord};
     to->piece = from->piece;
     to->color = from->color;
@@ -111,7 +110,7 @@ bool is_king_in_check_after_move(Move move, Colour colour) {
  * @return Move array of size 27, either populated or all 0s. Populated entries are not fragmented.
  */
 Move* generate_legal_moves_for_cell(Square *square) {
-    Move* moves = (Move*) malloc(MAX_POTENTIAL_MOVES_FOR_ONE_PIECE * sizeof(Move));
+    Move* moves = (Move*) calloc(MAX_POTENTIAL_MOVES_FOR_ONE_PIECE, sizeof(Move));
     int index = 0;
     Piece piece = square->piece;
     Colour colour = square->color;

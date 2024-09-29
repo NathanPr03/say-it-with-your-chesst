@@ -5,6 +5,8 @@
 #include "board.h"
 #pragma once
 
+extern const int MAX_POTENTIAL_TOTAL_MOVES_PER_COLOR;
+
 typedef struct {
     int from_x;
     int from_y;

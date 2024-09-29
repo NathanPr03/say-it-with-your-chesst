@@ -66,7 +66,6 @@ double positional_move_score(Move* move) {
     int to_x = move->to_x;
     int to_y = move->to_y;
 
-
     Square* current_square = &board[move->from_x][move->from_y];
 
     if(current_square->color == WHITE) {

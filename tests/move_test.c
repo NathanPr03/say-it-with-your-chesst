@@ -114,8 +114,8 @@ void test_initial_board_moves() {
 }
 
 void test_checkmate() {
-    OneColoursPieces *blackPieces = (OneColoursPieces *) malloc(sizeof(OneColoursPieces));
-    OneColoursPieces *whitePieces = (OneColoursPieces *) malloc(sizeof(OneColoursPieces));
+    OneColoursPieces *blackPieces = (OneColoursPieces *) calloc(1, sizeof(OneColoursPieces));
+    OneColoursPieces *whitePieces = (OneColoursPieces *) calloc(1, sizeof(OneColoursPieces));
 
     allPieces.whitePieces = whitePieces;
     allPieces.blackPieces = blackPieces;
