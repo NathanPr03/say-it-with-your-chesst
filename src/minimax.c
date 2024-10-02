@@ -18,7 +18,7 @@ MinimaxResult minimax(int depth, bool isMaximizingPlayer) {
         best_result.score = -INFINITY;
         best_result.best_move = (Move){-1, -1, -1, -1};
 
-        Move* moves = generate_moves_for_one_color(allPieces.whitePieces, true);
+        Move* moves = generate_moves_for_one_color(allPieces.whitePieces, true, 2);
         for (int i = 0; i < MAX_POTENTIAL_TOTAL_MOVES_PER_COLOR; i++) {
             Move move = moves[i];
             if(move.from_x == 0 && move.from_y == 0 && move.to_x == 0 && move.to_y == 0) {
@@ -56,7 +56,7 @@ MinimaxResult minimax(int depth, bool isMaximizingPlayer) {
         best_result.score = INFINITY;
         best_result.best_move = (Move){-1, -1, -1, -1};
 
-        Move* moves = generate_moves_for_one_color(allPieces.blackPieces, true);
+        Move* moves = generate_moves_for_one_color(allPieces.blackPieces, true, 2);
         for (int i = 0; i < MAX_POTENTIAL_TOTAL_MOVES_PER_COLOR; i++) {
             Move move = moves[i];
             if(move.from_x == 0 && move.from_y == 0 && move.to_x == 0 && move.to_y == 0) {

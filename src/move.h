@@ -15,11 +15,11 @@ typedef struct {
     double score;
 } Move;
 
-bool is_king_in_check(Colour colour);
+bool is_king_in_check(Colour colour, int depth);
 
 Move* generate_all_legal_moves();
 
-Move* generate_moves_for_one_color(OneColoursPieces* aColoursPieces, bool include_king);
+Move* generate_moves_for_one_color(OneColoursPieces* aColoursPieces, bool include_king, int depth);
 
 // TODO: Shouldnt be in header
 Square** execute_move(Move move, bool commit);
