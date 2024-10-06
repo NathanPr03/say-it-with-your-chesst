@@ -67,6 +67,7 @@ Square** execute_move(Move move, bool commit) {
     Square *to = &board[move.to_x][move.to_y];
 
     Square* old = &(Square){to->piece, to->color, to->x_coord, to->y_coord};
+
     to->piece = from->piece;
     to->color = from->color;
     from->piece = EMPTY;
@@ -116,8 +117,10 @@ bool is_king_in_check_after_move(Move move, Colour colour, int depth) {
         // The colour whose moving king isn't in check, but the move is trying to take the other colours piece which is invalid.
         return true;
     }
+
     Square previous_square_val = board[move.to_x][move.to_y];
     Square* previous_square = &board[move.to_x][move.to_y];
+
     Square** just_taken_square = execute_move(move, false);
     bool is_check = is_king_in_check(colour, depth);
 
@@ -171,7 +174,7 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
             }
 
             // Take to left
-            if (x > 1 && y > 1 && board[x-1][y-1].color == BLACK) {
+            if (x > 1 && y > 0 && board[x-1][y-1].color == BLACK) {
                 Move* move = &(Move) {x, y, x-1, y-1};
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
@@ -239,7 +242,7 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
             }
 
             // Take to right
-            if (x < 7 && y > 1 && board[x+1][y-1].color == WHITE) {
+            if (x < 7 && y > 0 && board[x+1][y-1].color == WHITE) {
                 Move* move = &((Move) {x, y, x+1, y-1});
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
@@ -578,7 +581,7 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
 
         // Move left and up (white inverse)
         if (x < 7 && y > 1 && (board[x+1][y-2].piece == EMPTY || board[x+1][y-2].color != colour)) {
-            Move* move = &(Move) {x, y, x+1, y+2};
+            Move* move = &(Move) {x, y, x+1, y-2};
             if(!is_king_in_check_after_move(*move, colour, depth)){
                 calculate_move_score(move);
                 moves[index] = *move;
@@ -803,7 +806,7 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
         }
     } else if(piece == KING) {
         // Move up
-        if (x > 1 && (board[x-1][y].piece == EMPTY || board[x-1][y].color != colour)) {
+        if (x > 0 && (board[x-1][y].piece == EMPTY || board[x-1][y].color != colour)) {
             Move potential_move = (Move) {x, y, x-1, y};
             if(!is_king_in_check_after_move(potential_move, colour, depth)) {
                 Move* move = &potential_move;
@@ -826,7 +829,7 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
         }
 
         // Move left
-        if (y > 1 && (board[x][y-1].piece == EMPTY || board[x][y-1].color != colour)) {
+        if (y > 0 && (board[x][y-1].piece == EMPTY || board[x][y-1].color != colour)) {
             Move potential_move = (Move) {x, y, x, y-1};
 
             if(!is_king_in_check_after_move(potential_move, colour, depth)) {
@@ -850,7 +853,7 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
         }
 
         // Move up and right
-        if (x > 1 && y < 7 && (board[x-1][y+1].piece == EMPTY || board[x-1][y+1].color != colour)) {
+        if (x > 0 && y < 7 && (board[x-1][y+1].piece == EMPTY || board[x-1][y+1].color != colour)) {
             Move potential_move = (Move) {x, y, x-1, y+1};
 
             if(!is_king_in_check_after_move(potential_move, colour, depth)) {
@@ -862,7 +865,7 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
         }
 
         // Move up and left
-        if (x > 1 && y > 1 && (board[x-1][y-1].piece == EMPTY || board[x-1][y-1].color != colour)) {
+        if (x > 0 && y > 0 && (board[x-1][y-1].piece == EMPTY || board[x-1][y-1].color != colour)) {
             Move potential_move = (Move) {x, y, x-1, y-1};
 
             if(!is_king_in_check_after_move(potential_move, colour, depth)) {
@@ -886,7 +889,7 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
         }
 
         // Move down and left
-        if (y > 1 && x < 7 && (board[x+1][y-1].piece == EMPTY || board[x+1][y-1].color != colour)) {
+        if (y > 0 && x < 7 && (board[x+1][y-1].piece == EMPTY || board[x+1][y-1].color != colour)) {
             Move potential_move = (Move) {x, y, x+1, y-1};
             if(!is_king_in_check_after_move(potential_move, colour, depth)) {
                 Move* move = &potential_move;

@@ -1,6 +1,7 @@
 #include <printf.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <math.h>
 #include "board.h"
 #include "move.h"
 #include "move_picker.h"
@@ -19,18 +20,7 @@ int main() {
 //    fgets(buffer, sizeof(buffer), stdin);
 
     for (int i = 0; i < 10000; i++) {
-        Move *all_whites_moves = generate_moves_for_one_color(allPieces.whitePieces, true, 2);
-        if (all_whites_moves == NULL || (all_whites_moves->to_x == 0 && all_whites_moves->from_x == 0 &&
-                                         all_whites_moves->to_y == 0 && all_whites_moves->from_y == 0)) {
-            if(is_king_in_check(WHITE, 1)) {
-                printf("\nBlack wins! White is CHECKMATED\n");
-                return 0;
-            }
-            printf("\nStalemate! It's a draw\n");
-        }
-//        Move *white_move = choose_move(all_whites_moves);
-//        execute_move(*white_move, true);
-        MinimaxResult meeneymax = minimax(4, true);
+        MinimaxResult meeneymax = minimax(7, true, -INFINITY, INFINITY);
         Move *white_move = &meeneymax.best_move;
 
         execute_move(*white_move, true);
@@ -42,13 +32,15 @@ int main() {
 //        fgets(buffer, sizeof(buffer), stdin);
 
         Move *all_blacks_moves = generate_moves_for_one_color(allPieces.blackPieces, true, 2);
-        if (all_blacks_moves == NULL || (all_blacks_moves->to_x == 0 && all_blacks_moves->from_x == 0 &&
-                                         all_blacks_moves->to_y == 0 && all_blacks_moves->from_y == 0)) {
+        if (all_blacks_moves == NULL || (all_blacks_moves[0].to_x == 0 && all_blacks_moves[0].from_x == 0 &&
+                                         all_blacks_moves[0].to_y == 0 && all_blacks_moves[0].from_y == 0)) {
             if(is_king_in_check(BLACK, 1)) {
                 printf("\nWhite wins! Black is CHECKMATED\n");
+                printf("\nNumber of moves played: %d \n", i);
                 return 0;
             }
             printf("\nStalemate! It's a draw\n");
+            return 0;
         }
         Move *black_move = choose_move(all_blacks_moves);
 
@@ -60,5 +52,5 @@ int main() {
 //        printf("Press Enter to continue...");
 //        fgets(buffer, sizeof(buffer), stdin);
     }
-
+    printf("1000 moves over");
 }

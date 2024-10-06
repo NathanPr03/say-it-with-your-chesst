@@ -11,6 +11,6 @@ typedef struct {
 
 // Intentionally not returning a pointer as struct is small and easier to copy.
 // They can be cached in registry which = fast operations
-MinimaxResult minimax(int depth, bool isMaximizingPlayer);
+MinimaxResult minimax(int depth, bool isMaximizingPlayer, double alpha, double beta);
 
 #endif //SAY_IT_WITH_YOUR_CHESST_MINIMAX_H

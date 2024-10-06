@@ -8,10 +8,10 @@
 void test_initial_board_moves() {
     init_board();
 
-    Move *white_moves = generate_moves_for_one_color(allPieces.whitePieces, true);
+    Move *white_moves = generate_moves_for_one_color(allPieces.whitePieces, true, 2);
     CU_ASSERT_PTR_NOT_NULL(white_moves);
 
-    Move *black_moves = generate_moves_for_one_color(allPieces.blackPieces, true);
+    Move *black_moves = generate_moves_for_one_color(allPieces.blackPieces, true, 2);
     CU_ASSERT_PTR_NOT_NULL(black_moves);
 
     // Can pawns move forward
@@ -156,7 +156,7 @@ void test_checkmate() {
     print_board(&board);
 
     // Game loop
-    Move *all_blacks_moves = generate_moves_for_one_color(allPieces.blackPieces, true);
+    Move *all_blacks_moves = generate_moves_for_one_color(allPieces.blackPieces, true, 2);
     if (all_blacks_moves == NULL) {
         printf("Black has no moves left. Checkmate?\n");
     }
@@ -166,7 +166,7 @@ void test_checkmate() {
     free(all_blacks_moves);
 
     printf("Blacks turn finished\n\n");
-    Move *all_whites_moves = generate_moves_for_one_color(allPieces.whitePieces, true);
+    Move *all_whites_moves = generate_moves_for_one_color(allPieces.whitePieces, true, 2);
 
     printf("from_x: %d, from_y: %d, to_x: %d, to_y: %d\n", all_whites_moves->from_x, all_whites_moves->from_y, all_whites_moves->to_x, all_whites_moves->to_y);
 
