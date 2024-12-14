@@ -1,4 +1,5 @@
 # Main executable
+set(CMAKE_OSX_SYSROOT /Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk) # Without this it tries to use the 15.1 SDK
 cmake_minimum_required(VERSION 3.29)
 project(say_it_with_your_chesst C)
 
