@@ -1,0 +1,12 @@
+- [x] Create plan.md
+- [ ] Create README.md, build instructions etc
+- [ ] Fix gitignore
+- [ ] Deal with branched user input code
+- [ ] Handle promotion
+- [ ] Handle en passant
+- [ ] Handle castling
+- [ ] Integration tests
+- [ ] Clean up code
+   - [ ] Resolve TODOs
+   - [ ] move_picker.c should have a separate move/board score function
+   - [ ] move.c needs split up. This will be risky and needs thorough integration tests in place first I think
