@@ -1,6 +1,6 @@
 - [x] Create plan.md
-- [ ] Create README.md, build instructions etc
-- [ ] Fix gitignore
+- [x] Create README.md, build instructions etc
+- [x] Fix gitignore
 - [ ] Deal with branched user input code
 - [ ] Handle promotion
 - [ ] Handle en passant
