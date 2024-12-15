@@ -178,7 +178,7 @@ void test_checkmate() {
 
 int main() {
     CU_initialize_registry();
-    CU_pSuite suite = CU_add_suite("ChessIntegrationTest", 0, 0);
+    CU_pSuite suite = CU_add_suite("MoveTest", 0, 0);
 
     CU_add_test(suite, "test_initial_board_moves", test_initial_board_moves);
     CU_add_test(suite, "test_checkmate", test_checkmate);

@@ -1,6 +1,7 @@
 #include "move.h"
 #include "board.h"
 #include "move_picker.h"
+#include "promotion.h"
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -59,6 +60,13 @@ Square** update_piece_pointer(Square* from, Square* to, Colour colour) {
         return &pieces->King;
     }
 
+    for (int i = 0; i < 8; i++) {
+        if(pieces->PromotedPieces[i] != NULL && pieces->PromotedPieces[i]->x_coord == x_coord && pieces->PromotedPieces[i]->y_coord == y_coord) {
+            pieces->PromotedPieces[i] = to;
+            return &pieces->PromotedPieces[i];
+        }
+    }
+
     return NULL;
 }
 
@@ -75,8 +83,13 @@ Square** execute_move(Move move, bool commit) {
 
     update_piece_pointer(from, to, to->color);
 
-    Square** all_pieces = update_piece_pointer(old, NULL, old->color);
+    // If we are promoting we handle updating the old pawn pointer
+    if(move.is_promotion == true) {
+        promote_pawn_to_queen(to);
+        return (Square **) from;
+    }
 
+    Square** all_pieces = update_piece_pointer(old, NULL, old->color);
     if (!commit) {
         if(all_pieces == NULL) {
         }else {
@@ -197,25 +210,28 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
             if(x == 1 && board[0][y].piece == EMPTY) {
                 Move* move = &(Move) {x, y, 0, y};
                 if(!is_king_in_check_after_move(*move, colour, depth)){
+                    move->is_promotion = true;
                     calculate_move_score(move);
                     moves[index] = *move;
                     index++;   
                 }
             }
 
-            if(x == 1 && board[0][y-1].piece == EMPTY) {
+            if(x == 1 && board[0][y-1].color == BLACK) {
                 Move* move = &(Move) {x, y, 0, y-1};
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
+                    move->is_promotion = true;
                     moves[index] = *move;
                     index++;
                 }
             }
 
-            if(x == 1 && board[0][y+1].piece == EMPTY) {
+            if(x == 1 && board[0][y+1].color == BLACK) {
                 Move* move = &(Move) {x, y, 0, y+1};
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
+                    move->is_promotion = true;
                     moves[index] = *move;
                     index++;
                 }
@@ -271,7 +287,7 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
                 }
             }
 
-            if(x == 6 && board[7][y-1].piece == EMPTY) {
+            if(x == 6 && board[7][y-1].color == BLACK) {
                 Move* move = &(Move) {x, y, 7, y-1};
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
@@ -280,7 +296,7 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
                 }
             }
 
-            if(x == 6 && board[7][y+1].piece == EMPTY) {
+            if(x == 6 && board[7][y+1].color == BLACK) {
                 Move* move = &(Move) {x, y, 7, y+1};
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
@@ -1087,7 +1103,7 @@ bool is_king_in_check(Colour colour, int depth) {
     // TODO: If we instead moved this check inside `generate_all_legal_moves` we could avoid this loop
     for (int i = 0; i < MAX_POTENTIAL_TOTAL_MOVES_PER_COLOR; i++) {
         Move* move = &all_legal_moves[i];
-        if(move == NULL) {
+        if(move == NULL || (move->from_x == 0 && move->from_y == 0 && move->to_x == 0 && move->to_y == 0)) {
             free(all_legal_moves);
             return false;
         }

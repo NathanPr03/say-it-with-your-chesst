@@ -58,6 +58,11 @@ void init_board() {
         }
     }
 
+    for (int i = 0; i < 8; i++) {
+        whitePieces->PromotedPieces[i] = (Square*) calloc(8, sizeof(Square*));
+        blackPieces->PromotedPieces[i] = (Square*) calloc(8, sizeof(Square*));
+    }
+
     allPieces.whitePieces = whitePieces;
     allPieces.blackPieces = blackPieces;
 }
@@ -193,6 +198,14 @@ double calculate_board_score(Square (*board_param)[8][8]) {
             if (pieces->Bishops[i] != NULL) {
                 score += 3;
                 score += bishop_position_score[pieces->Bishops[i]->x_coord][pieces->Bishops[i]->y_coord];
+            }
+        }
+
+        for (int i = 0; i < 8; i++) {
+            // TODO: This only caters for queens, this is wrong
+            if (pieces->PromotedPieces[i] != NULL) {
+                score += 9;
+                score += queen_position_score[pieces->PromotedPieces[i]->x_coord][pieces->PromotedPieces[i]->y_coord];
             }
         }
 

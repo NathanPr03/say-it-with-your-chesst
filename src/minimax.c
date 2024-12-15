@@ -4,7 +4,7 @@
 #include "move.h"
 #include "board.h"
 #include "minimax.h"
-
+#include "pieces.h"
 
 int compare_moves(const void* a, const void* b) {
     Move* moveA = (Move*)a;
@@ -41,6 +41,7 @@ MinimaxResult minimax(int depth, bool isMaximizingPlayer, double alpha, double b
         return result;
     }
 
+    // TODO: Can we parameterise come of this function?
     if (isMaximizingPlayer) {
         MinimaxResult best_result;
         best_result.score = -INFINITY;
@@ -66,7 +67,19 @@ MinimaxResult minimax(int depth, bool isMaximizingPlayer, double alpha, double b
             execute_move((Move){move.to_x, move.to_y, move.from_x, move.from_y}, false);
             board[move.to_x][move.to_y] = previous_square_val;
 
-            if (just_taken_square != NULL) {
+            // Promotion requires a more complicated undo. This is because it's moving two different piece types.
+            if(move.is_promotion) {
+                OneColoursPieces **pieces = (board[move.from_x][move.from_y].color == WHITE) ?
+                                            &allPieces.whitePieces : &allPieces.blackPieces;
+
+                board[move.from_x][move.from_y].piece = PAWN;
+
+                int pawn_index = find_next_empty_piece_index(board[move.from_x][move.from_y].color, PAWN);
+                (*pieces)->Pawns[pawn_index] = &board[move.from_x][move.from_y];
+
+                int promoted_piece_index = find_piece_index_by_coordinate(move.from_x, move.from_y, EMPTY, true);
+                (*pieces)->PromotedPieces[promoted_piece_index] = NULL;
+            }else if (just_taken_square != NULL) {
                 *just_taken_square = previous_square;
             }
 

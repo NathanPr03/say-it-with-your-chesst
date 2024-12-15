@@ -31,6 +31,7 @@ typedef struct {
     Square* Rooks[2];
     Square* Queen;
     Square* King;
+    Square* PromotedPieces[8]; // Max 8 promoted pieces
 }OneColoursPieces;
 
 typedef struct {
