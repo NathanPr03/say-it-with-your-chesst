@@ -66,3 +66,12 @@ cmake ..
 make tests
 ./tests
 ```
+
+There are also separate targets for each test file:
+```bash
+cd build
+cmake ..
+make tests
+./move_test
+./promotion_test
+```
