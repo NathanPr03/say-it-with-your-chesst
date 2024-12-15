@@ -21,9 +21,10 @@ This currently does:
 ## Build instructions
 This is only designed to work on MacOS.
 
-Built through the IDE by hitting run on `say_it_with_your_chest` target. 
+### IDE build instructions
+Built through the IDE by hitting run on `say_it_with_your_chesst` target. 
 
-⚠️ **Note**: This line in the CNMakeLists.txt file is brittle and may break if the SDK version changes.:
+⚠️ **Note**: This line in the CMakeLists.txt file is brittle and may break if the SDK version changes.:
 ```cmake
 set(CMAKE_OSX_SYSROOT /Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk) # Without this it tries to use the 15.1 SDK
 ```
@@ -35,6 +36,21 @@ cmake ..
 make
 ./say_it_with_your_chesst
 ```
+
+### Build Args
+You can switch between the black pieces being controlled by:
+- A good bot (the same as white) 
+- A bad bot (looks one move deep and picks the best one)
+- User input (you play as black)
+
+To do this you pass in three args at runtime, this looks like:
+```bash
+./say_it_with_your_chesst good-bot
+./say_it_with_your_chesst bad-bot
+./say_it_with_your_chesst user
+```
+
+This can also be done through the IDE by editing the `Run Configuration -> Arguments` field.
 
 ## Tests 
 This project has sparse, incomplete, and likely flakey integration tests. There are no, and will be no unit tests.

@@ -68,7 +68,10 @@ void print_board(Square (*board_param)[8][8]) {
         board_param = &board;
     }
 
+    printf("  12345678\n");
     for (int i = 0; i < 8; i++) {
+        // Print row number
+        printf("%d ", i+1);
         for (int j = 0; j < 8; j++) {
             Square square = (*board_param)[i][j];
             if(square.color == BLACK) {
@@ -120,10 +123,11 @@ void print_board(Square (*board_param)[8][8]) {
                         break;
                 }
             }
-
         }
         printf("\n");
     }
+
+    printf("  12345678\n");
 }
 
 double calculate_board_score(Square (*board_param)[8][8]) {

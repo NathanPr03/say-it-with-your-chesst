@@ -1,7 +1,8 @@
 - [x] Create plan.md
 - [x] Create README.md, build instructions etc
 - [x] Fix gitignore
-- [ ] Deal with branched user input code
+- [x] Deal with branched user input code (½ done)
+   - [x] Set build args to switch between good, bad, and branched user input code
 - [ ] Handle promotion
 - [ ] Handle en passant
 - [ ] Handle castling
