@@ -14,6 +14,7 @@ typedef struct {
     int to_y;
     double score;
     bool is_promotion;
+    Piece promotion_piece;
 } Move;
 
 bool is_king_in_check(Colour colour, int depth);

@@ -1,11 +1,12 @@
+
 - [x] Create plan.md
 - [x] Create README.md, build instructions etc
 - [x] Fix gitignore
 - [x] Deal with branched user input code
    - [x] Set build args to switch between good, bad, and branched user input code
-- [ ] Handle promotion
+- [x] Handle promotion
    - [x] Add queen only promotion
-   - [ ] Add promotion to other pieces (add them as separate moves which can be scored)
+   - [x] Add promotion to other pieces (add them as separate moves which can be scored)
 - [ ] Handle en passant
 - [ ] Handle castling
 - [ ] Integration tests
@@ -17,3 +18,5 @@
    - [ ] Rearrange Colour struct to have NONE first. And replace all usages of Colour = 0 being empty with NONE.
    - [ ] CamelCase or snake_case?
    - [ ] colour vs color
+  
+

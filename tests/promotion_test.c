@@ -108,7 +108,7 @@ void test_promotion_by_taking_to_the_right() {
 
     // Set up promotion by taking to the left
     board[1][5] = (Square) {PAWN, WHITE, 1, 5}; // White pawn
-    board[0][4] = (Square) {ROOK, BLACK, 0, 6}; // Black rook (capturable to the left)
+    board[0][6] = (Square) {ROOK, BLACK, 0, 6}; // Black rook (capturable to the left)
 
     allPieces.whitePieces->King = &board[0][0];
     allPieces.blackPieces->King = &board[7][7];
@@ -130,12 +130,87 @@ void test_promotion_by_taking_to_the_right() {
     CU_ASSERT_TRUE(allPieces.whitePieces->PromotedPieces[0] == &board[0][6]);
 }
 
+void test_promotion_to_knight() {
+    OneColoursPieces* blackPieces = (OneColoursPieces*) calloc(1, sizeof(OneColoursPieces));
+    OneColoursPieces* whitePieces = (OneColoursPieces*) calloc(1, sizeof(OneColoursPieces));
+
+    allPieces.whitePieces = whitePieces;
+    allPieces.blackPieces = blackPieces;
+
+    for (int x = 0; x < 8; x++) {
+        for (int y = 0; y < 8; y++) {
+            board[x][y].piece = EMPTY;
+            board[x][y].color = NONE;
+            board[x][y].x_coord = x;
+            board[x][y].y_coord = y;
+        }
+    }
+
+    board[1][2].piece = KING;
+    board[1][2].color = BLACK;
+
+    board[7][7].piece = KING;
+    board[7][7].color = WHITE;
+
+    board[1][0].piece = PAWN;
+    board[1][0].color = WHITE;
+
+    // Surround black king with white pawns, except (0,1) which is occupied by the white pawn
+    board[0][2].piece = PAWN; board[0][2].color = WHITE;
+    board[0][3].piece = PAWN; board[0][3].color = WHITE;
+    board[1][1].piece = PAWN; board[1][1].color = WHITE;
+    board[1][3].piece = PAWN; board[1][3].color = WHITE;
+    board[2][1].piece = PAWN; board[2][1].color = WHITE;
+    board[2][3].piece = PAWN; board[2][3].color = WHITE;
+    board[3][2].piece = QUEEN; board[3][2].color = WHITE;
+    board[0][1].piece = KNIGHT; board[0][1].color = WHITE;
+    board[0][4].piece = ROOK; board[0][4].color = WHITE;
+    board[2][0].piece = BISHOP; board[2][0].color = WHITE;
+    board[1][4].piece = ROOK; board[1][4].color = WHITE;
+
+    // Place a white knight at (2,2) to attack (0,1), ensuring black king cannot move there after promotion
+    board[2][2].piece = KNIGHT;
+    board[2][2].color = WHITE;
+
+    allPieces.whitePieces->King = &board[7][7];
+    allPieces.blackPieces->King = &board[1][2];
+    allPieces.whitePieces->Pawns[0] = &board[1][0];
+    allPieces.whitePieces->Pawns[1] = &board[0][2];
+    allPieces.whitePieces->Pawns[2] = &board[0][3];
+    allPieces.whitePieces->Pawns[3] = &board[1][1];
+    allPieces.whitePieces->Pawns[4] = &board[1][3];
+    allPieces.whitePieces->Pawns[5] = &board[2][1];
+    allPieces.whitePieces->Pawns[6] = &board[2][3];
+    allPieces.whitePieces->Knights[0] = &board[2][2];
+    allPieces.whitePieces->Knights[1] = &board[0][1];
+    allPieces.whitePieces->Queen = &board[3][2];
+    allPieces.whitePieces->Rooks[0] = &board[0][4];
+    allPieces.whitePieces->Rooks[1] = &board[1][4];
+    allPieces.whitePieces->Bishops[0] = &board[2][0];
+
+    MinimaxResult meeneymax = minimax(3, true, -INFINITY, INFINITY);
+    Move *white_move = &meeneymax.best_move;
+
+    execute_move(*white_move, true);
+
+    CU_ASSERT_TRUE(board[1][0].piece == EMPTY);
+    CU_ASSERT_TRUE(board[1][0].color == NONE);
+
+
+    CU_ASSERT_TRUE(board[0][0].color == WHITE);
+    CU_ASSERT_TRUE(board[0][0].piece == KNIGHT);
+
+    CU_ASSERT_TRUE(allPieces.whitePieces->PromotedPieces[0] == &board[0][0]);
+}
+
 int main() {
     CU_initialize_registry();
     CU_pSuite suite = CU_add_suite("PromotionTest", 0, 0);
 
     CU_add_test(suite, "test_promotion_by_moving_forward", test_promotion_by_moving_forward);
     CU_add_test(suite, "test_promotion_by_taking_to_the_left", test_promotion_by_taking_to_the_left);
+    CU_add_test(suite, "test_promotion_by_taking_to_the_right", test_promotion_by_taking_to_the_right);
+    CU_add_test(suite, "test_promotion_to_knight", test_promotion_to_knight);
 
     CU_basic_set_mode(CU_BRM_VERBOSE);
     CU_basic_run_tests();

@@ -136,7 +136,7 @@ void print_board(Square (*board_param)[8][8]) {
 }
 
 double calculate_board_score(Square (*board_param)[8][8]) {
-    double score = 0;
+    double score;
     double white_score = 0;
     double black_score = 0;
     OneColoursPieces *pieces;
@@ -202,10 +202,23 @@ double calculate_board_score(Square (*board_param)[8][8]) {
         }
 
         for (int i = 0; i < 8; i++) {
-            // TODO: This only caters for queens, this is wrong
             if (pieces->PromotedPieces[i] != NULL) {
-                score += 9;
-                score += queen_position_score[pieces->PromotedPieces[i]->x_coord][pieces->PromotedPieces[i]->y_coord];
+                if (pieces->PromotedPieces[i]->piece == QUEEN) {
+                    score += 9;
+                    score += queen_position_score[pieces->PromotedPieces[i]->x_coord][pieces->PromotedPieces[i]->y_coord];
+                }
+                if (pieces->PromotedPieces[i]->piece == ROOK) {
+                    score += 5;
+                    score += rook_position_score[pieces->PromotedPieces[i]->x_coord][pieces->PromotedPieces[i]->y_coord];
+                }
+                if (pieces->PromotedPieces[i]->piece == BISHOP) {
+                    score += 3;
+                    score += bishop_position_score[pieces->PromotedPieces[i]->x_coord][pieces->PromotedPieces[i]->y_coord];
+                }
+                if (pieces->PromotedPieces[i]->piece == KNIGHT) {
+                    score += 3;
+                    score += knight_position_score[pieces->PromotedPieces[i]->x_coord][pieces->PromotedPieces[i]->y_coord];
+                }
             }
         }
 

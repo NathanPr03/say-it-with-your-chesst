@@ -60,3 +60,17 @@ void promote_pawn_to_bishop(Square* wasPawn){
 void promote_pawn_to_knight(Square* wasPawn){
     promote_pawn_to_other_piece(wasPawn, KNIGHT);
 }
+
+Piece retrieve_promotion_piece(int index){
+   if(index == 0){
+       return QUEEN;
+   } else if(index == 1){
+       return ROOK;
+   } else if(index == 2){
+       return BISHOP;
+   } else if(index == 3){
+       return KNIGHT;
+   } else {
+       return EMPTY;
+   }
+}
