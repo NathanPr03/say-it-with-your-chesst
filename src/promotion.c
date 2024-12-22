@@ -45,22 +45,6 @@ void promote_pawn_to_other_piece(Square* wasPawn, Piece pieceToPromoteTo){
     }
 }
 
-void promote_pawn_to_queen(Square* wasPawn){
-    promote_pawn_to_other_piece(wasPawn, QUEEN);
-}
-
-void promote_pawn_to_rook(Square* wasPawn){
-    promote_pawn_to_other_piece(wasPawn, ROOK);
-}
-
-void promote_pawn_to_bishop(Square* wasPawn){
-    promote_pawn_to_other_piece(wasPawn, BISHOP);
-}
-
-void promote_pawn_to_knight(Square* wasPawn){
-    promote_pawn_to_other_piece(wasPawn, KNIGHT);
-}
-
 Piece retrieve_promotion_piece(int index){
    if(index == 0){
        return QUEEN;

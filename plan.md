@@ -7,10 +7,13 @@
 - [x] Handle promotion
    - [x] Add queen only promotion
    - [x] Add promotion to other pieces (add them as separate moves which can be scored)
-- [ ] Handle en passant
-   - [ ] Keep track of the last move
-   - [ ] Add en passant as a move
+- [x] Handle en passant
+   - [x] Keep track of the last move
+   - [x] Add en passant as a move
 - [ ] Handle castling
+   - [ ] Record whether a king has ever been in check
+   - [ ] Castle short
+   - [ ] Castle long
 - [ ] Integration tests
 - [ ] Clean up code
    - [ ] Extract execute and undo logic into command pattern

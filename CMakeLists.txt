@@ -15,6 +15,8 @@ add_library(say_it_with_your_chesst_lib
         src/promotion.c
         src/pieces.c
         src/en_passant.c
+        src/castle.c
+        src/castle.h
 )
 
 target_include_directories(say_it_with_your_chesst_lib PUBLIC ${PROJECT_SOURCE_DIR}/src)
