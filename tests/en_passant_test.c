@@ -40,11 +40,12 @@ void test_en_passant() {
     allPieces.whitePieces->Pawns[0] = &board[6][3];
     allPieces.blackPieces->Pawns[0] = &board[4][4];
 
-    // White moves first: pawn forward two squares
-    MinimaxResult whiteFirst = minimax(2, true, -INFINITY, INFINITY);
+    // White moves first: pawn forward two squares. Depth of 1 so white doesn't realise this is a bad move
+    MinimaxResult whiteFirst = minimax(1, true, -INFINITY, INFINITY);
     Move *white_move = &whiteFirst.best_move;
-    Move white_move_expected = {6, 3, 4, 3};
-    execute_move(white_move_expected, true);
+    execute_move(*white_move, true);
+    previous_move = *white_move;
+
 
     CU_ASSERT_TRUE(board[6][3].piece == EMPTY);
     CU_ASSERT_TRUE(board[6][3].color == NONE);
@@ -55,18 +56,15 @@ void test_en_passant() {
     MinimaxResult blackResp = minimax(2, false, -INFINITY, INFINITY);
     Move *black_move = &blackResp.best_move;
 
-    //TODO: WHy doesnt black choose en passant?
-    Move black_move_expected = {4, 4, 5, 3};
-    black_move_expected.is_en_passant = true;
-    execute_move(black_move_expected, false);
+    execute_move(*black_move, false);
 
     // Black pawn should move to (5,3), capturing the white pawn that jumped
     CU_ASSERT_TRUE(board[4][4].piece == EMPTY);
     CU_ASSERT_TRUE(board[4][4].color == NONE);
     CU_ASSERT_TRUE(board[4][3].piece == EMPTY);
     CU_ASSERT_TRUE(board[4][3].color == NONE);
-    CU_ASSERT_TRUE(board[5][4].piece == PAWN);
-    CU_ASSERT_TRUE(board[5][4].color == BLACK);
+    CU_ASSERT_TRUE(board[5][3].piece == PAWN);
+    CU_ASSERT_TRUE(board[5][3].color == BLACK);
 }
 
 int main() {

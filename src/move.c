@@ -156,12 +156,15 @@ bool is_king_in_check_after_move(Move move, Colour colour, int depth) {
     Square *previous_square = &board[move.to_x][move.to_y];
 
     Square **just_taken_square = execute_move(move, false);
+    Move two_moves_ago = previous_move;
+    previous_move = move; // Set this global variable for en passant
+
     bool is_check = is_king_in_check(colour, depth);
 
     // Undo move
     execute_move((Move) {move.to_x, move.to_y, move.from_x, move.from_y}, false);
     board[move.to_x][move.to_y] = previous_square_val;
-
+    previous_move = two_moves_ago;
 
     // Promotion requires a more complicated undo. This is because it's moving two different piece types.
     if (move.is_promotion) {
@@ -220,7 +223,7 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
             }
 
             // Move forward two
-            if(x == 6 && board[x-2][y].piece == EMPTY) {
+            if(x == 6 && board[x-2][y].piece == EMPTY && board[x-1][y].piece == EMPTY) {
                 Move* move = &(Move) {x, y, x-2, y};
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
@@ -298,7 +301,7 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
             // En passant
             if(is_move_en_passantable(previous_move)) {
                 // Don't have to check if the piece is a pawn here as it's done in `is_move_en_passantable`
-                if(y > 0 && board[x][y-1].color == BLACK) {
+                if(y > 0 && board[x][y-1].color == BLACK && x == previous_move.to_x && y-1 == previous_move.to_y) {
                     Move* move = &(Move) {x, y, x-1, y-1};
                     move->is_en_passant = true;
 
@@ -309,7 +312,7 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
                     }
                 }
 
-                if(y < 7 && board[x][y+1].color == BLACK) {
+                if(y < 7 && board[x][y+1].color == BLACK && x == previous_move.to_x && y+1 == previous_move.to_y) {
                     Move* move = &(Move) {x, y, x-1, y+1};
                     move->is_en_passant = true;
 
@@ -332,7 +335,7 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
             }
 
             // Move forward two
-            if(x == 1 && board[x+2][y].piece == EMPTY) {
+            if(x == 1 && board[x+2][y].piece == EMPTY && board[x+1][y].piece == EMPTY) {
                 Move* move = &((Move) {x, y, x+2, y});
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
@@ -410,7 +413,7 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
             // En passant
              if(is_move_en_passantable(previous_move)) {
                 // Don't have to check if the piece is a pawn here as it's done in `is_move_en_passantable`
-                if(y > 0 && board[x][y-1].color == WHITE) {
+                if(y > 0 && board[x][y-1].color == WHITE && x == previous_move.to_x && y-1 == previous_move.to_y) {
                     Move* move = &(Move) {x, y, x+1, y-1};
                     move->is_en_passant = true;
 
@@ -421,7 +424,7 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
                     }
                 }
 
-                if(y < 7 && board[x][y+1].color == WHITE) {
+                if(y < 7 && board[x][y+1].color == WHITE && x == previous_move.to_x && y+1 == previous_move.to_y) {
                     Move* move = &(Move) {x, y, x+1, y+1};
                     move->is_en_passant = true;
 

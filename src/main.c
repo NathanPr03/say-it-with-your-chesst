@@ -86,7 +86,7 @@ void play_against_bad_bot () {
 void play_against_good_bot() {
     printf("Playing against good bot");
 
-    MinimaxResult meeneymax = minimax(5, true, -INFINITY, INFINITY);
+    MinimaxResult meeneymax = minimax(5, false, -INFINITY, INFINITY);
     Move *black_move = &meeneymax.best_move;
 
     execute_move(*black_move, true);
@@ -107,7 +107,7 @@ int main(int argc, char *argv[]) {
         Move *white_move = &meeneymax.best_move;
 
         execute_move(*white_move, true);
-
+        previous_move = *white_move;
         printf("\n\n");
         print_board(NULL);
 
