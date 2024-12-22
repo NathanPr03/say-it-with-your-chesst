@@ -60,11 +60,14 @@ MinimaxResult minimax(int depth, bool isMaximizingPlayer, double alpha, double b
 
             // Execute move
             Square** just_taken_square = execute_move(move, false);
+            Move two_moves_ago = previous_move;
+            previous_move = move; // Set this global variable for en passant
 
             MinimaxResult current_result = minimax(depth - 1, false, alpha, beta);
 
             // Undo move
             execute_move((Move){move.to_x, move.to_y, move.from_x, move.from_y}, false);
+            previous_move = two_moves_ago;
             board[move.to_x][move.to_y] = previous_square_val;
 
             // Promotion requires a more complicated undo. This is because it's moving two different piece types.
@@ -79,6 +82,13 @@ MinimaxResult minimax(int depth, bool isMaximizingPlayer, double alpha, double b
 
                 int promoted_piece_index = find_piece_index_by_coordinate(move.from_x, move.from_y, EMPTY, true);
                 (*pieces)->PromotedPieces[promoted_piece_index] = NULL;
+            } else if(move.is_en_passant) {
+                Square* the_moved_to_square = &board[move.to_x+1][move.to_y]; // An en passant moves the pawn to the square behind the taken pawn
+                Colour opposite_colour = BLACK;
+                the_moved_to_square->color = opposite_colour;
+                the_moved_to_square->piece = PAWN;
+
+                *just_taken_square = the_moved_to_square;
             }else if (just_taken_square != NULL) {
                 *just_taken_square = previous_square;
             }
@@ -113,14 +123,36 @@ MinimaxResult minimax(int depth, bool isMaximizingPlayer, double alpha, double b
 
             // Execute move
             Square** just_taken_square = execute_move(move, false);
+            Move two_moves_ago = previous_move;
+            previous_move = move; // Set this global variable for en passants
 
             MinimaxResult current_result = minimax(depth - 1, true, alpha, beta);
 
             // Undo move
             execute_move((Move){move.to_x, move.to_y, move.from_x, move.from_y}, false);
+            previous_move = two_moves_ago;
             board[move.to_x][move.to_y] = previous_square_val;
 
-            if (just_taken_square != NULL) {
+            // Promotion requires a more complicated undo. This is because it's moving two different piece types.
+            if(move.is_promotion) {
+                OneColoursPieces **pieces = (board[move.from_x][move.from_y].color == WHITE) ?
+                                            &allPieces.whitePieces : &allPieces.blackPieces;
+
+                board[move.from_x][move.from_y].piece = PAWN;
+
+                int pawn_index = find_next_empty_piece_index(board[move.from_x][move.from_y].color, PAWN);
+                (*pieces)->Pawns[pawn_index] = &board[move.from_x][move.from_y];
+
+                int promoted_piece_index = find_piece_index_by_coordinate(move.from_x, move.from_y, EMPTY, true);
+                (*pieces)->PromotedPieces[promoted_piece_index] = NULL;
+            } else if(move.is_en_passant) {
+                Square* the_moved_to_square = &board[move.to_x-1][move.to_y]; // An en passant moves the pawn to the square behind the taken pawn
+                Colour opposite_colour = WHITE;
+                the_moved_to_square->color = opposite_colour;
+                the_moved_to_square->piece = PAWN;
+
+                *just_taken_square = the_moved_to_square;
+            }else if (just_taken_square != NULL) {
                 *just_taken_square = previous_square;
             }
 

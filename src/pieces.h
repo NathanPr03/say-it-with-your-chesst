@@ -1,6 +1,5 @@
-#ifndef SAY_IT_WITH_YOUR_CHESST_MOVE_PICKER_H
-#define SAY_IT_WITH_YOUR_CHESST_MOVE_PICKER_H
-#include "move.h"
+#ifndef SAY_IT_WITH_YOUR_CHESST_PIECES_H
+#define SAY_IT_WITH_YOUR_CHESST_PIECES_H
 #pragma once
     int find_next_empty_piece_index(Colour colour, Piece piece_type);
 

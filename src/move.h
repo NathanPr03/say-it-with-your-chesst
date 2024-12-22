@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include "board.h"
+
 #pragma once
 
 extern const int MAX_POTENTIAL_TOTAL_MOVES_PER_COLOR;
@@ -15,11 +16,12 @@ typedef struct {
     double score;
     bool is_promotion;
     Piece promotion_piece;
+    bool is_en_passant;
 } Move;
 
-bool is_king_in_check(Colour colour, int depth);
+extern Move previous_move;
 
-Move* generate_all_legal_moves();
+bool is_king_in_check(Colour colour, int depth);
 
 Move* generate_moves_for_one_color(OneColoursPieces* aColoursPieces, bool include_king, int depth);
 

@@ -55,6 +55,7 @@ void play_against_user() {
     }
 
     execute_move(black_move, true);
+    previous_move = black_move;
 
     printf("\n\n");
     print_board(NULL);
@@ -76,6 +77,7 @@ void play_against_bad_bot () {
     Move *black_move = choose_move(all_blacks_moves);
 
     execute_move(*black_move, true);
+    previous_move = *black_move;
 
     printf("\n\n");
     print_board(NULL);
@@ -88,6 +90,7 @@ void play_against_good_bot() {
     Move *black_move = &meeneymax.best_move;
 
     execute_move(*black_move, true);
+    previous_move = *black_move;
 
     printf("\n\n");
     print_board(NULL);

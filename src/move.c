@@ -2,12 +2,19 @@
 #include "board.h"
 #include "move_picker.h"
 #include "promotion.h"
+#include "en_passant.h"
+#include "pieces.h"
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdio.h>
 
 const int MAX_POTENTIAL_TOTAL_MOVES_PER_COLOR = 129;
 
+Move previous_move = {0, 0, 0, 0, 0, false, EMPTY};
+
+/**
+ * @return A pointer to the square that was taken, NULL if no square was taken
+ */
 Square** update_piece_pointer(Square* from, Square* to, Colour colour) {
     OneColoursPieces *pieces;
     if(colour == WHITE) {
@@ -70,6 +77,9 @@ Square** update_piece_pointer(Square* from, Square* to, Colour colour) {
     return NULL;
 }
 
+/**
+ * @return Square** A pointer to the square that was taken, NULL if no square was taken
+ */
 Square** execute_move(Move move, bool commit) {
     Square *from = &board[move.from_x][move.from_y];
     Square *to = &board[move.to_x][move.to_y];
@@ -89,6 +99,17 @@ Square** execute_move(Move move, bool commit) {
         return (Square **) from;
     }
 
+    if(move.is_en_passant == true) {
+        Square* previously_moved_pawn = &board[previous_move.to_x][previous_move.to_y];
+
+        Square** en_passantee = update_piece_pointer(previously_moved_pawn, NULL, previously_moved_pawn->color);
+
+        board[previous_move.to_x][previous_move.to_y].piece = EMPTY;
+        board[previous_move.to_x][previous_move.to_y].color = NONE;
+
+        return en_passantee;
+    }
+
     Square** all_pieces = update_piece_pointer(old, NULL, old->color);
     if (!commit) {
         if(all_pieces == NULL) {
@@ -104,8 +125,8 @@ Square** execute_move(Move move, bool commit) {
 
 // Used to see if king would be moving into check. These moves are executed, checked then undone.
 bool is_king_in_check_after_move(Move move, Colour colour, int depth) {
-    depth --;
-    if(depth == 0) {
+    depth--;
+    if (depth == 0) {
         // Presume white wants to move
         // We check if moving a white piece means a black piece puts the king in check
         // To see if the black piece puts the white king in check we generate all black moves
@@ -114,34 +135,56 @@ bool is_king_in_check_after_move(Move move, Colour colour, int depth) {
         return false;
     }
 
-    OneColoursPieces* otherColoursPieces;
-    if(colour == WHITE) {
+    OneColoursPieces *otherColoursPieces;
+    if (colour == WHITE) {
         otherColoursPieces = allPieces.blackPieces;
     } else if (colour == BLACK) {
         otherColoursPieces = allPieces.whitePieces;
     }
 
-    if(otherColoursPieces == NULL) {
+    if (otherColoursPieces == NULL) {
         printf("otherColoursPieces not set");
     }
 
-    if(move.to_x == otherColoursPieces->King->x_coord && move.to_y == otherColoursPieces->King->y_coord) {
+    if (move.to_x == otherColoursPieces->King->x_coord && move.to_y == otherColoursPieces->King->y_coord) {
         // Slight bastardisation of this function.
         // The colour whose moving king isn't in check, but the move is trying to take the other colours piece which is invalid.
         return true;
     }
 
     Square previous_square_val = board[move.to_x][move.to_y];
-    Square* previous_square = &board[move.to_x][move.to_y];
+    Square *previous_square = &board[move.to_x][move.to_y];
 
-    Square** just_taken_square = execute_move(move, false);
+    Square **just_taken_square = execute_move(move, false);
     bool is_check = is_king_in_check(colour, depth);
 
     // Undo move
     execute_move((Move) {move.to_x, move.to_y, move.from_x, move.from_y}, false);
     board[move.to_x][move.to_y] = previous_square_val;
 
-    if(just_taken_square != NULL) {
+
+    // Promotion requires a more complicated undo. This is because it's moving two different piece types.
+    if (move.is_promotion) {
+        OneColoursPieces **pieces = (board[move.from_x][move.from_y].color == WHITE) ?
+                                    &allPieces.whitePieces : &allPieces.blackPieces;
+
+        board[move.from_x][move.from_y].piece = PAWN;
+
+        int pawn_index = find_next_empty_piece_index(board[move.from_x][move.from_y].color, PAWN);
+        (*pieces)->Pawns[pawn_index] = &board[move.from_x][move.from_y];
+
+        int promoted_piece_index = find_piece_index_by_coordinate(move.from_x, move.from_y, EMPTY, true);
+        (*pieces)->PromotedPieces[promoted_piece_index] = NULL;
+    } else if(move.is_en_passant) {
+        // An en passant moves the pawn to the square behind the taken pawn. This will be -1 for white and +1 for black
+        int en_passant_offset = (colour == WHITE) ? 1 : -1;
+        Square* the_moved_to_square = &board[move.to_x+en_passant_offset][move.to_y];
+        Colour opposite_colour = colour == WHITE ? BLACK : WHITE;
+        the_moved_to_square->color = opposite_colour;
+        the_moved_to_square->piece = PAWN;
+
+        *just_taken_square = the_moved_to_square;
+    }else if (just_taken_square != NULL) {
         *just_taken_square = previous_square;
     }
 
@@ -149,7 +192,7 @@ bool is_king_in_check_after_move(Move move, Colour colour, int depth) {
 }
 
 /**
- * @return Move array of size 27, either populated or all 0s. Populated entries are not fragmented.
+ * @return Move array of size 27, either populated or all 0s. Populated entries are contiguous, not fragmented.
  */
 Move* generate_legal_moves_for_cell(Square *square, int depth) {
     Move* moves = (Move*) calloc(MAX_POTENTIAL_MOVES_FOR_ONE_PIECE, sizeof(Move));
@@ -172,7 +215,7 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
                     moves[index] = *move;
-                    index++;   
+                    index++;
                 }
             }
 
@@ -182,7 +225,7 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
                     moves[index] = *move;
-                    index++;   
+                    index++;
                 }
             }
 
@@ -192,7 +235,7 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
                     moves[index] = *move;
-                    index++;   
+                    index++;
                 }
             }
 
@@ -202,11 +245,11 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
                     moves[index] = *move;
-                    index++;   
+                    index++;
                 }
             }
 
-            // Promote TODO: Implement promotion
+            // Promote
             if(x == 1 && board[0][y].piece == EMPTY) {
                 Move* move = &(Move) {x, y, 0, y, true};
                 if(!is_king_in_check_after_move(*move, colour, depth)){
@@ -251,6 +294,32 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
                     }
                 }
             }
+
+            // En passant
+            if(is_move_en_passantable(previous_move)) {
+                // Don't have to check if the piece is a pawn here as it's done in `is_move_en_passantable`
+                if(y > 0 && board[x][y-1].color == BLACK) {
+                    Move* move = &(Move) {x, y, x-1, y-1};
+                    move->is_en_passant = true;
+
+                    if(!is_king_in_check_after_move(*move, colour, depth)){
+                        calculate_move_score(move);
+                        moves[index] = *move;
+                        index++;
+                    }
+                }
+
+                if(y < 7 && board[x][y+1].color == BLACK) {
+                    Move* move = &(Move) {x, y, x-1, y+1};
+                    move->is_en_passant = true;
+
+                    if(!is_king_in_check_after_move(*move, colour, depth)){
+                        calculate_move_score(move);
+                        moves[index] = *move;
+                        index++;
+                    }
+                }
+            }
         } else if(colour == BLACK) {
             // Move forward
             if(x < 7 && board[x+1][y].piece == EMPTY) {
@@ -258,7 +327,7 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
                     moves[index] = *move;
-                    index++;   
+                    index++;
                 }
             }
 
@@ -268,7 +337,7 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
                     moves[index] = *move;
-                    index++;   
+                    index++;
                 }
             }
 
@@ -278,7 +347,7 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
                     moves[index] = *move;
-                    index++;   
+                    index++;
                 }
             }
 
@@ -288,11 +357,11 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
                     moves[index] = *move;
-                    index++;   
+                    index++;
                 }
             }
 
-            // Promotion TODO: Implement promotion
+            // Promotion
             if(x == 6 && board[7][y].piece == EMPTY) {
                 Move* move = &(Move) {x, y, 7, y};
                 if(!is_king_in_check_after_move(*move, colour, depth)){
@@ -337,6 +406,32 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
                     }
                 }
             }
+
+            // En passant
+             if(is_move_en_passantable(previous_move)) {
+                // Don't have to check if the piece is a pawn here as it's done in `is_move_en_passantable`
+                if(y > 0 && board[x][y-1].color == WHITE) {
+                    Move* move = &(Move) {x, y, x+1, y-1};
+                    move->is_en_passant = true;
+
+                    if(!is_king_in_check_after_move(*move, colour, depth)){
+                        calculate_move_score(move);
+                        moves[index] = *move;
+                        index++;
+                    }
+                }
+
+                if(y < 7 && board[x][y+1].color == WHITE) {
+                    Move* move = &(Move) {x, y, x+1, y+1};
+                    move->is_en_passant = true;
+
+                    if(!is_king_in_check_after_move(*move, colour, depth)){
+                        calculate_move_score(move);
+                        moves[index] = *move;
+                        index++;
+                    }
+                }
+            }
         }
     } else if(piece == BISHOP) {
         // Move right diagonally
@@ -349,14 +444,14 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
                     moves[index] = *move;
-                    index++;   
+                    index++;
                 }
             } else if (board[x+i][y+i].color != colour) {
                 Move* move = &(Move) {x, y, x+i, y+i};
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
                     moves[index] = *move;
-                    index++;   
+                    index++;
                 }
                 break;
             } else {
@@ -377,14 +472,14 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
                     moves[index] = *move;
-                    index++;   
+                    index++;
                 }
             } else if (board[x-i][y+i].color != colour) {
                 Move* move = &(Move) {x, y, x-i, y+i};
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
                     moves[index] = *move;
-                    index++;   
+                    index++;
                 }
                 break;
             } else {
@@ -403,14 +498,14 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
                     moves[index] = *move;
-                    index++;   
+                    index++;
                 }
             } else if (board[x-i][y-i].color != colour) {
                 Move* move = &(Move) {x, y, x-i, y-i};
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
                     moves[index] = *move;
-                    index++;   
+                    index++;
                 }
                 break;
             } else {
@@ -457,14 +552,14 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
                     moves[index] = *move;
-                    index++;   
+                    index++;
                 }
             } else if (board[x][y+i].color != colour) {
                 Move* move = &(Move) {x, y, x, y+i};
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
                     moves[index] = *move;
-                    index++;   
+                    index++;
                 }
                 break;
             } else {
@@ -482,14 +577,14 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
                     moves[index] = *move;
-                    index++;   
+                    index++;
                 }
             } else if (board[x][y-i].color != colour) {
                 Move* move = &(Move) {x, y, x, y-i};
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
                     moves[index] = *move;
-                    index++;   
+                    index++;
                 }
                 break;
             } else {
@@ -507,14 +602,14 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
                     moves[index] = *move;
-                    index++;   
+                    index++;
                 }
             } else if (board[x-i][y].color != colour) {
                 Move* move = &(Move) {x, y, x-i, y};
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
                     moves[index] = *move;
-                    index++;   
+                    index++;
                 }
                 break;
             } else {
@@ -532,14 +627,14 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
                     moves[index] = *move;
-                    index++;   
+                    index++;
                 }
             } else if (board[x+i][y].color != colour) {
                 Move* move = &(Move) {x, y, x+i, y};
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
                     moves[index] = *move;
-                    index++;   
+                    index++;
                 }
                 break;
             } else {
@@ -652,14 +747,14 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
                     moves[index] = *move;
-                    index++;   
+                    index++;
                 }
             } else if (board[x][y+i].color != colour) {
                 Move* move = &(Move) {x, y, x, y+i};
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
                     moves[index] = *move;
-                    index++;   
+                    index++;
                 }
                 break;
             } else {
@@ -678,14 +773,14 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
                     moves[index] = *move;
-                    index++;   
+                    index++;
                 }
             } else if (board[x][y-i].color != colour) {
                 Move* move = &(Move) {x, y, x, y-i};
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
                     moves[index] = *move;
-                    index++;   
+                    index++;
                 }
                 break;
             } else {
@@ -704,14 +799,14 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
                     moves[index] = *move;
-                    index++;   
+                    index++;
                 }
             } else if (board[x-i][y].color != colour) {
                 Move* move = &(Move) {x, y, x-i, y};
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
                     moves[index] = *move;
-                    index++;   
+                    index++;
                 }
                 break;
             } else {
@@ -730,14 +825,14 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
                     moves[index] = *move;
-                    index++;   
+                    index++;
                 }
             } else if (board[x+i][y].color != colour) {
                 Move* move = &(Move) {x, y, x+i, y};
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
                     moves[index] = *move;
-                    index++;   
+                    index++;
                 }
                 break;
             } else {
@@ -757,14 +852,14 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
                     moves[index] = *move;
-                    index++;   
+                    index++;
                 }
             } else if (board[x+i][y+i].color != colour) {
                 Move* move = &(Move) {x, y, x+i, y+i};
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
                     moves[index] = *move;
-                    index++;   
+                    index++;
                 }
                 break;
             } else {
@@ -785,14 +880,14 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
                     moves[index] = *move;
-                    index++;   
+                    index++;
                 }
             } else if (board[x-i][y+i].color != colour) {
                 Move* move = &(Move) {x, y, x-i, y+i};
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
                     moves[index] = *move;
-                    index++;   
+                    index++;
                 }
                 break;
             } else {
@@ -811,14 +906,14 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
                     moves[index] = *move;
-                    index++;   
+                    index++;
                 }
             } else if (board[x-i][y-i].color != colour) {
                 Move* move = &(Move) {x, y, x-i, y-i};
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
                     moves[index] = *move;
-                    index++;   
+                    index++;
                 }
                 break;
             } else {
@@ -839,14 +934,14 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
                     moves[index] = *move;
-                    index++;   
+                    index++;
                 }
             } else if (board[x+i][y-i].color != colour) {
                 Move* move = &(Move) {x, y, x+i, y-i};
                 if(!is_king_in_check_after_move(*move, colour, depth)){
                     calculate_move_score(move);
                     moves[index] = *move;
-                    index++;   
+                    index++;
                 }
                 break;
             } else {
