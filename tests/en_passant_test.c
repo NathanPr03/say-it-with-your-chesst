@@ -53,7 +53,7 @@ void test_en_passant() {
     CU_ASSERT_TRUE(board[4][3].color == WHITE);
 
     // Black responds with en passant
-    MinimaxResult blackResp = minimax(2, false, -INFINITY, INFINITY);
+    MinimaxResult blackResp = minimax(5, false, -INFINITY, INFINITY);
     Move *black_move = &blackResp.best_move;
 
     execute_move(*black_move, false);
