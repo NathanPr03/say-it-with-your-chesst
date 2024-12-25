@@ -21,13 +21,14 @@ void play_against_user() {
     char buffer[128];
 
     bool valid_move = false;
-    Move black_move;
+    Move users_move = {-1, -1, -1, -1, -1, false, EMPTY, false};
+    Move black_move = {-1, -1, -1, -1, -1, false, EMPTY, false};
 
     while (!valid_move) {
         printf("Enter black's move (e.g., 21 23): ");
         fgets(buffer, sizeof(buffer), stdin);
 
-        convert_user_input_to_move(buffer, &black_move);
+        convert_user_input_to_move(buffer, &users_move);
 
         // Validate the move
         Move* all_blacks_moves = generate_moves_for_one_color(allPieces.blackPieces, true, 2);
@@ -43,9 +44,11 @@ void play_against_user() {
 
         for (int j = 0; j < MAX_POTENTIAL_TOTAL_MOVES_PER_COLOR; j++) {
             Move* a_move = &all_blacks_moves[j];
-            if (a_move->from_x == black_move.from_x && a_move->from_y == black_move.from_y &&
-                a_move->to_x == black_move.to_x && a_move->to_y == black_move.to_y) {
+            if (a_move->from_x == users_move.from_x && a_move->from_y == users_move.from_y &&
+                a_move->to_x == users_move.to_x && a_move->to_y == users_move.to_y) {
                 valid_move = true;
+                // We want to get all the move information, i.e is promotion, is en passant. The user doesn't supply it, its generated programatically
+                black_move = *a_move;
                 break;
             }
         }
