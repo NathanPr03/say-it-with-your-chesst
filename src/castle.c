@@ -1,5 +1,7 @@
+#include <stddef.h>
 #include "castle.h"
 
+// These are dependant on the rooks been ordered "correctly" // TODO: Maybe change this?
 const int QUEEN_SIDE_ROOK_INDEX = 0;
 const int KING_SIDE_ROOK_INDEX = 1;
 
@@ -38,7 +40,11 @@ bool can_short_castle(Square king) {
     OneColoursPieces* one_colours_piece = colour == WHITE ? allPieces.whitePieces : allPieces.blackPieces;
     Square* the_rook = one_colours_piece->Rooks[KING_SIDE_ROOK_INDEX];
 
-    if(is_castling_possible(colour, the_rook->piece)){
+    if(the_rook == NULL){
+        return false;
+    }
+
+    if(!is_castling_possible(colour, the_rook->piece)){
         return false;
     }
 
@@ -59,7 +65,11 @@ bool can_long_castle(Square king) {
     OneColoursPieces* one_colours_piece = colour == WHITE ? allPieces.whitePieces : allPieces.blackPieces;
     Square* the_rook = one_colours_piece->Rooks[QUEEN_SIDE_ROOK_INDEX];
 
-    if(is_castling_possible(colour, the_rook->piece)){
+    if(the_rook == NULL){
+        return false;
+    }
+
+    if(!is_castling_possible(colour, the_rook->piece)){
         return false;
     }
 

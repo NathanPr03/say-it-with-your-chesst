@@ -236,7 +236,32 @@ bool is_king_in_check_after_move(Move move, Colour colour, int depth) {
         the_moved_to_square->piece = PAWN;
 
         *just_taken_square = the_moved_to_square;
-    }else if (just_taken_square != NULL) {
+    } else if(move.is_castling) {
+        // Long castle
+        if(move.to_y == 2) {
+            Square* where_rook_should_be = &board[move.to_x][0];
+            Square* moved_rook = &board[move.to_x][3];
+
+            where_rook_should_be->piece = moved_rook->piece;
+            where_rook_should_be->color = moved_rook->color;
+
+            moved_rook->piece = EMPTY;
+            moved_rook->color = NONE;
+
+            *just_taken_square = where_rook_should_be;
+        }else if(move.to_y == 6) { // Short castle
+            Square* where_rook_should_be = &board[move.to_x][7];
+            Square* moved_rook = &board[move.to_x][5];
+
+            where_rook_should_be->piece = moved_rook->piece;
+            where_rook_should_be->color = moved_rook->color;
+
+            moved_rook->piece = EMPTY;
+            moved_rook->color = NONE;
+
+            *just_taken_square = where_rook_should_be;
+        }
+    } else if (just_taken_square != NULL) {
         *just_taken_square = previous_square;
     }
 
