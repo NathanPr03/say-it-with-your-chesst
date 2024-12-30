@@ -16,7 +16,6 @@ add_library(say_it_with_your_chesst_lib
         src/pieces.c
         src/en_passant.c
         src/castle.c
-        src/castle.h
 )
 
 target_include_directories(say_it_with_your_chesst_lib PUBLIC ${PROJECT_SOURCE_DIR}/src)
@@ -35,20 +34,24 @@ link_directories("/opt/homebrew/opt/cunit/lib")
 find_library(CUNIT_LIB cunit HINTS "/opt/homebrew/opt/cunit/lib")
 
 add_executable(move_test tests/move_test.c src/board.c src/move.c src/move_picker.c src/postional_score_matrices.c src/promotion.c src/minimax.c src/pieces.c
-        src/en_passant.c)
+        src/en_passant.c src/castle.c)
 target_link_libraries(move_test ${CUNIT_LIB})
 
 add_executable(promotion_test tests/promotion_test.c src/board.c src/move.c src/move_picker.c src/postional_score_matrices.c src/promotion.c src/minimax.c src/pieces.c
-        src/en_passant.c)
+        src/en_passant.c src/castle.c)
 target_link_libraries(promotion_test ${CUNIT_LIB})
 
 add_executable(en_passant_test tests/en_passant_test.c src/board.c src/move.c src/move_picker.c src/postional_score_matrices.c src/promotion.c src/minimax.c src/pieces.c
-        src/en_passant.c)
+        src/en_passant.c src/castle.c)
 target_link_libraries(en_passant_test ${CUNIT_LIB})
+
+add_executable(castle_test tests/castle_test.c src/board.c src/move.c src/move_picker.c src/postional_score_matrices.c src/promotion.c src/minimax.c src/pieces.c
+        src/en_passant.c src/castle.c)
+target_link_libraries(castle_test ${CUNIT_LIB})
 
 # Create an umbrella target for all tests
 add_custom_target(tests ALL
-        DEPENDS move_test promotion_test en_passant_test
+        DEPENDS move_test promotion_test en_passant_test castle_test
         COMMENT "Building all test executables"
 )
 
