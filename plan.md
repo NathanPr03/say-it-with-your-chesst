@@ -10,10 +10,10 @@
 - [x] Handle en passant
    - [x] Keep track of the last move
    - [x] Add en passant as a move
-- [ ] Handle castling
+- [x] Handle castling
    - [x] Record whether a king has ever been in check
-   - [ ] Castle short
-   - [ ] Castle long
+   - [x] Castle short
+   - [x] Castle long
 - [ ] Integration tests
 - [ ] Clean up code
    - [ ] Extract execute and undo logic into command pattern
