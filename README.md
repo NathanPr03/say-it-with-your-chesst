@@ -57,21 +57,22 @@ This project has sparse, incomplete, and likely flakey integration tests. There 
 
 The tests use the CUnit test framework.
 
-They can be run through the IDE by hitting run on the `tests` target.
+They can be run through the IDE by hitting run one of the `some_functionality_test` target. Such as `move_test`.
 
 Or through the command line:
 ```bash
 cd build
 cmake ..
-make tests
-./tests
+make move_test
+./move_test
 ```
 
-There are also separate targets for each test file:
+There are also a single target that runs all the tests, however this only works over the cmd line:
 ```bash
 cd build
 cmake ..
 make tests
-./move_test
-./promotion_test
 ```
+
+The `full_game_test` is slightly different to the other tests as it actually executes the `say_it_with_your_chesst` binary and checks the output.
+To run this the `say_it_with_your_chesst` binary first needs to be built as described above in the "Cmd line build instructions" section.
