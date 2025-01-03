@@ -14,6 +14,13 @@
    - [x] Record whether a king has ever been in check
    - [x] Castle short
    - [x] Castle long
+   - [ ] Complete castling rules
+     - [ ] King can't castle through check
+     - [ ] If king has moved, can't castle
+     - [ ] If rook has moved, can't castle
+- [ ] Three-fold repetition
+   - [ ] Keep track of the last 8 board states
+   - [ ] If the same board state has occurred 3 times, the game is a draw
 - [ ] Integration tests
 - [ ] Clean up code
    - [ ] Extract execute and undo logic into command pattern

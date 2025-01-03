@@ -65,6 +65,12 @@ Square** update_piece_pointer(Square* from, Square* to, Colour colour) {
     }
 
     if(pieces->King != NULL && pieces->King->x_coord == x_coord && pieces->King->y_coord == y_coord) {
+        if (to == NULL) {
+            printf("King is null\n");
+        }
+        if (to->piece != KING) {
+            printf("King is not a king\n");
+        }
         pieces->King = to;
         return &pieces->King;
     }
