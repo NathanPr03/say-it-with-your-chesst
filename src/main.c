@@ -109,7 +109,7 @@ int main(int argc, char *argv[]) {
     init_board();
     print_board(NULL);
 
-    void (*playModeFuncPtr)();
+    void (*playModeFuncPtr)(int);
 
     const char *play_mode = "good-bot";
     if (argc > 1) {
@@ -132,6 +132,7 @@ int main(int argc, char *argv[]) {
 
     int move_counter = 0;
     for (int i = 0; i < 10000; i++) {
+        move_counter++;
         MinimaxResult meeneymax = minimax(5, true, -INFINITY, INFINITY);
         Move *white_move = &meeneymax.best_move;
 
@@ -149,6 +150,6 @@ int main(int argc, char *argv[]) {
         printf("\n\n");
         print_board(NULL);
 
-        playModeFuncPtr();
+        playModeFuncPtr(move_counter);
     }
 }
