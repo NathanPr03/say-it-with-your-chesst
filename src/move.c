@@ -68,9 +68,11 @@ Square** update_piece_pointer(Square* from, Square* to, Colour colour) {
         if (to == NULL) {
             printf("King is null\n");
         }
+
         if (to->piece != KING) {
             printf("King is not a king\n");
         }
+
         pieces->King = to;
         return &pieces->King;
     }
