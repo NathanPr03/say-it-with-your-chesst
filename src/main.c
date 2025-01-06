@@ -16,8 +16,7 @@ void convert_user_input_to_move(char* input, Move* move) {
     move->to_x = input[4] - '1';
 }
 
-void play_against_user() {
-    printf("Playing against user\n");
+void play_against_user(int move_counter) {
     char buffer[128];
 
     bool valid_move = false;
@@ -35,11 +34,11 @@ void play_against_user() {
         if (all_blacks_moves == NULL || (all_blacks_moves[0].to_x == 0 && all_blacks_moves[0].from_x == 0 &&
                                          all_blacks_moves[0].to_y == 0 && all_blacks_moves[0].from_y == 0)) {
             if(is_king_in_check(BLACK, 1)) {
-                printf("\nWhite wins! Black is CHECKMATED\n");
-                return;
+                printf("\nWhite wins! Black is CHECKMATED, after %d moves\n", move_counter);
+                exit(0);
             }
-            printf("\nStalemate! It's a draw\n");
-            return;
+            printf("\nStalemate! It's a draw, after %d moves\n", move_counter);
+            exit(0);
         }
 
         for (int j = 0; j < MAX_POTENTIAL_TOTAL_MOVES_PER_COLOR; j++) {
@@ -64,18 +63,16 @@ void play_against_user() {
     print_board(NULL);
 }
 
-void play_against_bad_bot () {
-    printf("Playing against bad bot");
-
+void play_against_bad_bot (int move_counter) {
     Move *all_blacks_moves = generate_moves_for_one_color(allPieces.blackPieces, true, 2);
     if (all_blacks_moves == NULL || (all_blacks_moves[0].to_x == 0 && all_blacks_moves[0].from_x == 0 &&
                                      all_blacks_moves[0].to_y == 0 && all_blacks_moves[0].from_y == 0)) {
         if(is_king_in_check(BLACK, 1)) {
-            printf("\nWhite wins! Black is CHECKMATED\n");
-            return;
+            printf("\nWhite wins! Black is CHECKMATED, after %d moves\n", move_counter);
+            exit(0);
         }
-        printf("\nStalemate! It's a draw\n");
-        return;
+        printf("\nStalemate! It's a draw, after %d moves\n", move_counter);
+        exit(0);
     }
     Move *black_move = choose_move(all_blacks_moves);
 
@@ -86,11 +83,18 @@ void play_against_bad_bot () {
     print_board(NULL);
 }
 
-void play_against_good_bot() {
-    printf("Playing against good bot");
-
+void play_against_good_bot(int move_counter) {
     MinimaxResult meeneymax = minimax(5, false, -INFINITY, INFINITY);
     Move *black_move = &meeneymax.best_move;
+
+    if(black_move->to_x == -1 && black_move->to_y == -1) {
+        if(is_king_in_check(BLACK, 1)) {
+            printf("\nWhite wins! Black is CHECKMATED, after %d moves\n", move_counter);
+            exit(0);
+        }
+        printf("\nStalemate! It's a draw, after %d moves\n", move_counter);
+        exit(0);
+    }
 
     execute_move(*black_move, true);
     previous_move = *black_move;
@@ -105,29 +109,47 @@ int main(int argc, char *argv[]) {
     init_board();
     print_board(NULL);
 
+    void (*playModeFuncPtr)(int);
+
+    const char *play_mode = "good-bot";
+    if (argc > 1) {
+        play_mode = argv[1];
+    }
+
+    if (strcmp(play_mode, "good-bot") == 0) {
+        printf("Playing against good bot");
+        playModeFuncPtr = play_against_good_bot;
+    } else if (strcmp(play_mode, "bad-bot") == 0) {
+        printf("Playing against bad bot");
+        playModeFuncPtr = play_against_bad_bot;
+    } else if (strcmp(play_mode, "user") == 0) {
+        printf("Playing against user\n");
+        playModeFuncPtr = play_against_user;
+    } else {
+        printf("Unknown play mode: %s\n", play_mode);
+        return 1;
+    }
+
+    int move_counter = 0;
     for (int i = 0; i < 10000; i++) {
+        move_counter++;
         MinimaxResult meeneymax = minimax(5, true, -INFINITY, INFINITY);
         Move *white_move = &meeneymax.best_move;
+
+        if(white_move->to_x == -1 && white_move->to_y == -1) {
+            if(is_king_in_check(BLACK, 1)) {
+                printf("\nBlack wins! White is CHECKMATED, after %d moves\n", move_counter);
+                exit(0);
+            }
+            printf("\nStalemate! It's a draw, after %d moves\n", move_counter);
+            exit(0);
+        }
 
         execute_move(*white_move, true);
         previous_move = *white_move;
         printf("\n\n");
         print_board(NULL);
 
-        const char *play_mode = "good-bot";
-        if (argc > 1) {
-            play_mode = argv[1];
-        }
-
-        if (strcmp(play_mode, "good-bot") == 0) {
-            play_against_good_bot();
-        } else if (strcmp(play_mode, "bad-bot") == 0) {
-            play_against_bad_bot();
-        } else if (strcmp(play_mode, "user") == 0) {
-            play_against_user();
-        } else {
-            printf("Unknown play mode: %s\n", play_mode);
-            return 1;
-        }
+        playModeFuncPtr(move_counter);
     }
 }

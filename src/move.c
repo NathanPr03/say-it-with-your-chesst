@@ -4,6 +4,7 @@
 #include "promotion.h"
 #include "en_passant.h"
 #include "pieces.h"
+#include "castle.h"
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -13,7 +14,8 @@ const int MAX_POTENTIAL_TOTAL_MOVES_PER_COLOR = 129;
 Move previous_move = {0, 0, 0, 0, 0, false, EMPTY};
 
 /**
- * @return A pointer to the square that was taken, NULL if no square was taken
+ * Updates the Pieces struct for a particular colour. This keeps the Pieces struct in sync with the board array after a move is made. .
+ * @return A pointer to the square that was taken, NULL if no square was taken. This can be used to undo a move.
  */
 Square** update_piece_pointer(Square* from, Square* to, Colour colour) {
     OneColoursPieces *pieces;
@@ -63,6 +65,14 @@ Square** update_piece_pointer(Square* from, Square* to, Colour colour) {
     }
 
     if(pieces->King != NULL && pieces->King->x_coord == x_coord && pieces->King->y_coord == y_coord) {
+        if (to == NULL) {
+            printf("King is null\n");
+        }
+
+        if (to->piece != KING) {
+            printf("King is not a king\n");
+        }
+
         pieces->King = to;
         return &pieces->King;
     }
@@ -75,6 +85,16 @@ Square** update_piece_pointer(Square* from, Square* to, Colour colour) {
     }
 
     return NULL;
+}
+
+/**
+ * Used to set the king is in check. Needed for castling. Only set if commit is true
+ */
+void mark_checked_king_if_commit(Square* move_to, bool commit) {
+    bool opposite_colour = (move_to->color == WHITE) ? BLACK : WHITE;
+    if(commit && is_king_in_check(opposite_colour, 1)){
+        mark_king_as_in_check(opposite_colour);
+    }
 }
 
 /**
@@ -93,13 +113,14 @@ Square** execute_move(Move move, bool commit) {
 
     update_piece_pointer(from, to, to->color);
 
-    // If we are promoting we handle updating the old pawn pointer
-    if(move.is_promotion == true) {
+    // If we are promoting we handle updating the old pawn pointer in `promote_pawn_to_other_piece`
+    if(move.is_promotion) {
         promote_pawn_to_other_piece(to, move.promotion_piece);
+        mark_checked_king_if_commit(to, commit);
         return (Square **) from;
     }
 
-    if(move.is_en_passant == true) {
+    if(move.is_en_passant) {
         Square* previously_moved_pawn = &board[previous_move.to_x][previous_move.to_y];
 
         Square** en_passantee = update_piece_pointer(previously_moved_pawn, NULL, previously_moved_pawn->color);
@@ -107,7 +128,40 @@ Square** execute_move(Move move, bool commit) {
         board[previous_move.to_x][previous_move.to_y].piece = EMPTY;
         board[previous_move.to_x][previous_move.to_y].color = NONE;
 
+        mark_checked_king_if_commit(to, commit);
+
         return en_passantee;
+    }
+
+    if(move.is_castling) {
+        Square** rook_thats_moving = (Square**) {EMPTY, NONE, -1, -1};
+
+        if(move.to_y == 2) {
+            // Long castle
+            Square* rook = &board[move.to_x][0];
+            Square* rook_to = &board[move.to_x][3];
+
+            rook_to->piece = rook->piece;
+            rook_to->color = rook->color;
+            rook->piece = EMPTY;
+            rook->color = NONE;
+
+            rook_thats_moving = update_piece_pointer(rook, rook_to, rook_to->color);
+        } else {
+            // Short castle
+            Square* rook = &board[move.to_x][7];
+            Square* rook_to = &board[move.to_x][5];
+
+            rook_to->piece = rook->piece;
+            rook_to->color = rook->color;
+            rook->piece = EMPTY;
+            rook->color = NONE;
+
+            rook_thats_moving = update_piece_pointer(rook, rook_to, rook_to->color);
+        }
+
+        mark_checked_king_if_commit(to, commit);
+        return rook_thats_moving;
     }
 
     Square** all_pieces = update_piece_pointer(old, NULL, old->color);
@@ -118,12 +172,15 @@ Square** execute_move(Move move, bool commit) {
         }
     }
 
+    mark_checked_king_if_commit(to, commit);
     to = NULL;
 
     return NULL;
 }
 
-// Used to see if king would be moving into check. These moves are executed, checked then undone.
+/**
+ * Used to see if king would be moving into check. These moves are executed, checked then undone.
+ */
 bool is_king_in_check_after_move(Move move, Colour colour, int depth) {
     depth--;
     if (depth == 0) {
@@ -187,7 +244,32 @@ bool is_king_in_check_after_move(Move move, Colour colour, int depth) {
         the_moved_to_square->piece = PAWN;
 
         *just_taken_square = the_moved_to_square;
-    }else if (just_taken_square != NULL) {
+    } else if(move.is_castling) {
+        // Long castle
+        if(move.to_y == 2) {
+            Square* where_rook_should_be = &board[move.to_x][0];
+            Square* moved_rook = &board[move.to_x][3];
+
+            where_rook_should_be->piece = moved_rook->piece;
+            where_rook_should_be->color = moved_rook->color;
+
+            moved_rook->piece = EMPTY;
+            moved_rook->color = NONE;
+
+            *just_taken_square = where_rook_should_be;
+        }else if(move.to_y == 6) { // Short castle
+            Square* where_rook_should_be = &board[move.to_x][7];
+            Square* moved_rook = &board[move.to_x][5];
+
+            where_rook_should_be->piece = moved_rook->piece;
+            where_rook_should_be->color = moved_rook->color;
+
+            moved_rook->piece = EMPTY;
+            moved_rook->color = NONE;
+
+            *just_taken_square = where_rook_should_be;
+        }
+    } else if (just_taken_square != NULL) {
         *just_taken_square = previous_square;
     }
 
@@ -1044,6 +1126,24 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
                 moves[index] = *move;
                 index++;
             }
+        }
+
+        // Castling
+        if(can_long_castle(*square)) {
+            // Don't need separate y coords for black and white here, since the y coord is the same for both
+            Move* move = &(Move) {x, y, x, y-2};
+            move->is_castling = true;
+            calculate_move_score(move);
+            moves[index] = *move;
+            index++;
+        }
+
+        if(can_short_castle(*square)) {
+            Move* move = &(Move) {x, y, x, y+2};
+            move->is_castling = true;
+            calculate_move_score(move);
+            moves[index] = *move;
+            index++;
         }
     }
 

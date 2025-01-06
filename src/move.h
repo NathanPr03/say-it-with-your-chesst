@@ -17,6 +17,7 @@ typedef struct {
     bool is_promotion;
     Piece promotion_piece;
     bool is_en_passant;
+    bool is_castling;
 } Move;
 
 extern Move previous_move;

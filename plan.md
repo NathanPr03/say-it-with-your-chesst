@@ -6,18 +6,25 @@
    - [x] Set build args to switch between good, bad, and branched user input code
 - [x] Handle promotion
    - [x] Add queen only promotion
-   - [x] Add promotion to other pieces (add them as separate moves which can be scored)
+   - [x] Add promotion kp]to other pieces (add them as separate moves which can be scored)
 - [x] Handle en passant
    - [x] Keep track of the last move
    - [x] Add en passant as a move
-- [ ] Handle castling
-   - [ ] Record whether a king has ever been in check
-   - [ ] Castle short
-   - [ ] Castle long
+- [x] Handle castling
+   - [x] Record whether a king has ever been in check
+   - [x] Castle short
+   - [x] Castle long
+   - [ ] Complete castling rules
+     - [ ] King can't castle through check
+     - [ ] If king has moved, can't castle
+     - [ ] If rook has moved, can't castle
+- [ ] Three-fold repetition
+   - [ ] Keep track of the last 8 board states
+   - [ ] If the same board state has occurred 3 times, the game is a draw
 - [ ] Integration tests
 - [ ] Clean up code
    - [ ] Extract execute and undo logic into command pattern
-      - [ ] Create stack of previous moves 
+      - [ ] Create stack of previous moves  -- likely need this for castling
    - [ ] Resolve TODOs
    - [ ] move_picker.c should have a separate move/board score function
    - [ ] move.c needs split up. This will be risky and needs thorough integration tests in place first I think
@@ -25,5 +32,6 @@
    - [ ] Rearrange Colour struct to have NONE first. And replace all usages of Colour = 0 being empty with NONE.
    - [ ] CamelCase or snake_case?
    - [ ] colour vs color
+   - [ ] minimax.c should have more DRY code
   
 

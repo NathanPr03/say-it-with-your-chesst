@@ -59,8 +59,13 @@ void init_board() {
     }
 
     for (int i = 0; i < 8; i++) {
-        whitePieces->PromotedPieces[i] = (Square*) calloc(8, sizeof(Square*));
-        blackPieces->PromotedPieces[i] = (Square*) calloc(8, sizeof(Square*));
+        Square* empty_white_square = calloc(1, sizeof(Square));
+        *empty_white_square = (Square) {EMPTY, NONE, 0, 0};
+        whitePieces->PromotedPieces[i] = empty_white_square;
+
+        Square* empty_black_square = calloc(1, sizeof(Square));
+        *empty_black_square = (Square) {EMPTY, NONE, 0, 0};
+        blackPieces->PromotedPieces[i] = empty_black_square;
     }
 
     allPieces.whitePieces = whitePieces;
