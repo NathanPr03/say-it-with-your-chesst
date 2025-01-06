@@ -5,6 +5,7 @@
 #include "en_passant.h"
 #include "pieces.h"
 #include "castle.h"
+#include "game_history.h"
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -88,21 +89,15 @@ Square** update_piece_pointer(Square* from, Square* to, Colour colour) {
 }
 
 /**
- * Used to set the king is in check. Needed for castling. Only set if commit is true
- */
-void mark_checked_king_if_commit(Square* move_to, bool commit) {
-    bool opposite_colour = (move_to->color == WHITE) ? BLACK : WHITE;
-    if(commit && is_king_in_check(opposite_colour, 1)){
-        mark_king_as_in_check(opposite_colour);
-    }
-}
-
-/**
  * @return Square** A pointer to the square that was taken, NULL if no square was taken
  */
 Square** execute_move(Move move, bool commit) {
     Square *from = &board[move.from_x][move.from_y];
     Square *to = &board[move.to_x][move.to_y];
+
+    if(commit) {
+        add_move_to_game_history(&move, *from, *to);
+    }
 
     Square* old = &(Square){to->piece, to->color, to->x_coord, to->y_coord};
 
@@ -116,7 +111,7 @@ Square** execute_move(Move move, bool commit) {
     // If we are promoting we handle updating the old pawn pointer in `promote_pawn_to_other_piece`
     if(move.is_promotion) {
         promote_pawn_to_other_piece(to, move.promotion_piece);
-        mark_checked_king_if_commit(to, commit);
+
         return (Square **) from;
     }
 
@@ -127,8 +122,6 @@ Square** execute_move(Move move, bool commit) {
 
         board[previous_move.to_x][previous_move.to_y].piece = EMPTY;
         board[previous_move.to_x][previous_move.to_y].color = NONE;
-
-        mark_checked_king_if_commit(to, commit);
 
         return en_passantee;
     }
@@ -160,7 +153,6 @@ Square** execute_move(Move move, bool commit) {
             rook_thats_moving = update_piece_pointer(rook, rook_to, rook_to->color);
         }
 
-        mark_checked_king_if_commit(to, commit);
         return rook_thats_moving;
     }
 
