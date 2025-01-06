@@ -10,7 +10,7 @@ void create_game_history() {
 }
 
 void add_move_to_game_history(Move* move, Square from_square, Square to_square) {
-    game_history->moves = (GameHistoryMove*) realloc(game_history->moves, game_history->length * sizeof(GameHistoryMove));
+    game_history->moves = (GameHistoryMove*) realloc(game_history->moves, game_history->length + 1 * sizeof(GameHistoryMove));
     game_history->moves[game_history->length].move = move;
     game_history->moves[game_history->length].from_square = from_square;
     game_history->moves[game_history->length].to_square = to_square;

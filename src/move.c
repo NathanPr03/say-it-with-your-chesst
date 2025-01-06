@@ -164,7 +164,6 @@ Square** execute_move(Move move, bool commit) {
         }
     }
 
-    mark_checked_king_if_commit(to, commit);
     to = NULL;
 
     return NULL;

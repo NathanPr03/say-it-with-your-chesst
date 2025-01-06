@@ -4,8 +4,10 @@
 #include <stdlib.h>
 #include "move.h"
 #include "minimax.h"
+#include "game_history.h"
 
 void test_en_passant() {
+    create_game_history();
     OneColoursPieces* blackPieces = (OneColoursPieces*) calloc(1, sizeof(OneColoursPieces));
     OneColoursPieces* whitePieces = (OneColoursPieces*) calloc(1, sizeof(OneColoursPieces));
 

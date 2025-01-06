@@ -4,11 +4,6 @@
 #include <stdbool.h>
 #include "board.h"
 
-
-void mark_king_as_moved(Colour colour);
-void mark_rook_as_moved(Piece the_rook, Colour colour);
-void mark_king_as_in_check(Colour colour);
-
 bool can_long_castle(Square king);
 bool can_short_castle(Square king);
 

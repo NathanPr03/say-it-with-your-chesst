@@ -35,22 +35,33 @@ link_directories("/opt/homebrew/opt/cunit/lib")
 find_library(CUNIT_LIB cunit HINTS "/opt/homebrew/opt/cunit/lib")
 
 add_executable(move_test tests/move_test.c src/board.c src/move.c src/move_picker.c src/postional_score_matrices.c src/promotion.c src/minimax.c src/pieces.c
-        src/en_passant.c)
+        src/en_passant.c src/castle.c src/game_history.c)
 target_link_libraries(move_test ${CUNIT_LIB})
 
 add_executable(promotion_test tests/promotion_test.c src/board.c src/move.c src/move_picker.c src/postional_score_matrices.c src/promotion.c src/minimax.c src/pieces.c
-        src/en_passant.c)
+        src/en_passant.c src/castle.c src/game_history.c)
 target_link_libraries(promotion_test ${CUNIT_LIB})
 
 add_executable(en_passant_test tests/en_passant_test.c src/board.c src/move.c src/move_picker.c src/postional_score_matrices.c src/promotion.c src/minimax.c src/pieces.c
-        src/en_passant.c)
+        src/en_passant.c src/castle.c src/game_history.c)
 target_link_libraries(en_passant_test ${CUNIT_LIB})
 
-# Create an umbrella target for all tests
-add_custom_target(tests ALL
-        DEPENDS move_test promotion_test en_passant_test
-        COMMENT "Building all test executables"
+add_executable(castle_test tests/castle_test.c src/board.c src/move.c src/move_picker.c src/postional_score_matrices.c src/promotion.c src/minimax.c src/pieces.c
+        src/en_passant.c src/castle.c src/game_history.c)
+target_link_libraries(castle_test ${CUNIT_LIB})
+
+add_executable(full_game_test tests/full_game_test.c src/board.c src/move.c src/move_picker.c src/postional_score_matrices.c src/promotion.c src/minimax.c src/pieces.c
+        src/en_passant.c src/castle.c src/game_history.c)
+target_link_libraries(full_game_test ${CUNIT_LIB})
+
+# Create a single executable-like target that runs all tests
+add_custom_target(tests
+        COMMAND ./move_test || (echo "move_test failed!" && exit 1)
+        COMMAND ./promotion_test || (echo "promotion_test failed!" && exit 1)
+        COMMAND ./en_passant_test || (echo "en_passant_test failed!" && exit 1)
+        COMMAND ./castle_test || (echo "castle_test failed!" && exit 1)
+        COMMAND ./full_game_test || (echo "full_game_test failed!" && exit 1)
+        COMMENT "Running all tests"
 )
 
-enable_testing()
-add_test(NAME IntegrationTests COMMAND tests)
+add_test(NAME AllTests COMMAND tests)

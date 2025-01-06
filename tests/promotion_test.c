@@ -4,8 +4,10 @@
 #include <stdlib.h>
 #include "move.h"
 #include "minimax.h"
+#include "game_history.h"
 
 void test_promotion_by_moving_forward() {
+    create_game_history();
     OneColoursPieces* blackPieces = (OneColoursPieces*) calloc(1, sizeof(OneColoursPieces));
     OneColoursPieces* whitePieces = (OneColoursPieces*) calloc(1, sizeof(OneColoursPieces));
 
@@ -45,6 +47,7 @@ void test_promotion_by_moving_forward() {
 }
 
 void test_promotion_by_taking_to_the_left() {
+    create_game_history();
     OneColoursPieces* blackPieces = (OneColoursPieces*) calloc(1, sizeof(OneColoursPieces));
     OneColoursPieces* whitePieces = (OneColoursPieces*) calloc(1, sizeof(OneColoursPieces));
 
@@ -88,6 +91,7 @@ void test_promotion_by_taking_to_the_left() {
 }
 
 void test_promotion_by_taking_to_the_right() {
+    create_game_history();
     OneColoursPieces* blackPieces = (OneColoursPieces*) calloc(1, sizeof(OneColoursPieces));
     OneColoursPieces* whitePieces = (OneColoursPieces*) calloc(1, sizeof(OneColoursPieces));
 
@@ -131,6 +135,7 @@ void test_promotion_by_taking_to_the_right() {
 }
 
 void test_promotion_to_knight() {
+    create_game_history();
     OneColoursPieces* blackPieces = (OneColoursPieces*) calloc(1, sizeof(OneColoursPieces));
     OneColoursPieces* whitePieces = (OneColoursPieces*) calloc(1, sizeof(OneColoursPieces));
 

@@ -15,16 +15,16 @@
    - [x] Castle long
    - [ ] Complete castling rules
      - [ ] King can't castle through check
-     - [ ] If king has moved, can't castle
-     - [ ] If rook has moved, can't castle
-     - [ ] King can castle even if hes been checked
+     - [x] If king has moved, can't castle
+     - [x] If rook has moved, can't castle
+     - [X] King can castle even if hes been checked
 - [ ] Three-fold repetition
    - [ ] Keep track of the last 8 board states
    - [ ] If the same board state has occurred 3 times, the game is a draw
 - [ ] Integration tests
 - [ ] Clean up code
    - [ ] Extract execute and undo logic into command pattern
-      - [ ] Create stack of previous moves 
+      - [x] Create stack of previous moves 
    - [ ] Resolve TODOs
    - [ ] move_picker.c should have a separate move/board score function
    - [ ] move.c needs split up. This will be risky and needs thorough integration tests in place first I think
