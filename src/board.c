@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "board.h"
 #include "postional_score_matrices.h"
+#include "game_history.h"
 
 Square board[8][8];
 
@@ -70,6 +71,8 @@ void init_board() {
 
     allPieces.whitePieces = whitePieces;
     allPieces.blackPieces = blackPieces;
+
+    create_game_history();
 }
 
 void print_board(Square (*board_param)[8][8]) {

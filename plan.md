@@ -1,4 +1,3 @@
-
 - [x] Create plan.md
 - [x] Create README.md, build instructions etc
 - [x] Fix gitignore
@@ -6,7 +5,7 @@
    - [x] Set build args to switch between good, bad, and branched user input code
 - [x] Handle promotion
    - [x] Add queen only promotion
-   - [x] Add promotion kp]to other pieces (add them as separate moves which can be scored)
+   - [x] Add promotion to other pieces (add them as separate moves which can be scored)
 - [x] Handle en passant
    - [x] Keep track of the last move
    - [x] Add en passant as a move
@@ -14,17 +13,19 @@
    - [x] Record whether a king has ever been in check
    - [x] Castle short
    - [x] Castle long
-   - [ ] Complete castling rules
-     - [ ] King can't castle through check
-     - [ ] If king has moved, can't castle
-     - [ ] If rook has moved, can't castle
+   - [x] Complete castling rules
+     - [X] King can't castle through check
+     - [x] If king has moved, can't castle
+     - [x] If rook has moved, can't castle
+     - [X] King can castle even if hes been checked
 - [ ] Three-fold repetition
    - [ ] Keep track of the last 8 board states
    - [ ] If the same board state has occurred 3 times, the game is a draw
 - [ ] Integration tests
 - [ ] Clean up code
    - [ ] Extract execute and undo logic into command pattern
-      - [ ] Create stack of previous moves  -- likely need this for castling
+      - [x] Create stack of previous moves
+   - [ ] When generating moves, only generate moves for the opposing colour once, and then pass that through to `is_king_in_check_after_move` and subsequently `is_king_in_check`
    - [ ] Resolve TODOs
    - [ ] move_picker.c should have a separate move/board score function
    - [ ] move.c needs split up. This will be risky and needs thorough integration tests in place first I think
@@ -32,6 +33,5 @@
    - [ ] Rearrange Colour struct to have NONE first. And replace all usages of Colour = 0 being empty with NONE.
    - [ ] CamelCase or snake_case?
    - [ ] colour vs color
-   - [ ] minimax.c should have more DRY code
   
 

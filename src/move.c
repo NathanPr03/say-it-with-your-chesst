@@ -5,6 +5,7 @@
 #include "en_passant.h"
 #include "pieces.h"
 #include "castle.h"
+#include "game_history.h"
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -88,21 +89,15 @@ Square** update_piece_pointer(Square* from, Square* to, Colour colour) {
 }
 
 /**
- * Used to set the king is in check. Needed for castling. Only set if commit is true
- */
-void mark_checked_king_if_commit(Square* move_to, bool commit) {
-    bool opposite_colour = (move_to->color == WHITE) ? BLACK : WHITE;
-    if(commit && is_king_in_check(opposite_colour, 1)){
-        mark_king_as_in_check(opposite_colour);
-    }
-}
-
-/**
  * @return Square** A pointer to the square that was taken, NULL if no square was taken
  */
 Square** execute_move(Move move, bool commit) {
     Square *from = &board[move.from_x][move.from_y];
     Square *to = &board[move.to_x][move.to_y];
+
+    if(commit) {
+        add_move_to_game_history(&move, *from, *to);
+    }
 
     Square* old = &(Square){to->piece, to->color, to->x_coord, to->y_coord};
 
@@ -116,7 +111,7 @@ Square** execute_move(Move move, bool commit) {
     // If we are promoting we handle updating the old pawn pointer in `promote_pawn_to_other_piece`
     if(move.is_promotion) {
         promote_pawn_to_other_piece(to, move.promotion_piece);
-        mark_checked_king_if_commit(to, commit);
+
         return (Square **) from;
     }
 
@@ -127,8 +122,6 @@ Square** execute_move(Move move, bool commit) {
 
         board[previous_move.to_x][previous_move.to_y].piece = EMPTY;
         board[previous_move.to_x][previous_move.to_y].color = NONE;
-
-        mark_checked_king_if_commit(to, commit);
 
         return en_passantee;
     }
@@ -160,7 +153,6 @@ Square** execute_move(Move move, bool commit) {
             rook_thats_moving = update_piece_pointer(rook, rook_to, rook_to->color);
         }
 
-        mark_checked_king_if_commit(to, commit);
         return rook_thats_moving;
     }
 
@@ -172,7 +164,6 @@ Square** execute_move(Move move, bool commit) {
         }
     }
 
-    mark_checked_king_if_commit(to, commit);
     to = NULL;
 
     return NULL;
@@ -187,8 +178,8 @@ bool is_king_in_check_after_move(Move move, Colour colour, int depth) {
         // Presume white wants to move
         // We check if moving a white piece means a black piece puts the king in check
         // To see if the black piece puts the white king in check we generate all black moves
-        // Now we have to check if moving a black piece puts the black king in check. But we dont care if it does.
-        // Even if the black piece putting the white king under check is pinned to the black king, tha black king is still in check.
+        // Now we have to check if moving a black piece puts the black king in check. But we don't care if it does.
+        // Even if the black piece putting the white king under check is pinned to the black king, the white king is still in check.
         return false;
     }
 
@@ -626,7 +617,9 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
             }
         }
     } else if (piece == ROOK) {
-        // Move right (left for black)
+        // i starts at one here as we need a differential else we will try to move to the square we are on
+
+        // Move east
         for (int i = 1; i < 8; i++) {
             if(y+i > 7) {
                 break;
@@ -651,7 +644,8 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
                 break;
             }
         }
-        // Move left (right for black)
+
+        // Move west
         for (int i = 1; i < 8; i++) {
             if(y-i < 0) {
                 break;
@@ -676,10 +670,11 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
                 break;
             }
         }
-        // Move up (down for black)
+
+        // Move north
         for (int i = 1; i < 8; i++) {
             if(x-i < 0) {
-                continue;
+                break;
             }
 
             if (board[x-i][y].piece == EMPTY) {
@@ -701,7 +696,8 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
                 break;
             }
         }
-        // Move down (up for black)
+
+        // Move south
         for (int i = 1; i < 8; i++) {
             if(x+i > 7) {
                 break;
@@ -1166,6 +1162,7 @@ void merge_arrays_for_pieces(Move* the_moves, Move* some_moves, int* total_moves
         (*total_moves_added)++;
     }
 }
+
 /**
  * @param depth used to stop infinite recursion when making sure a potential move doesnt put the king in check
  * @return Array of moves, limited to 129. Not fragmented, one null value will be the end of the array.
@@ -1186,11 +1183,6 @@ Move* generate_moves_for_one_color(OneColoursPieces* aColoursPieces, bool includ
 
         free(kings_moves);
     }
-
-//    if(include_king && is_king_in_check(aColoursPieces->King->color)) {
-//        printf("King is in check, only generating moves for king\n");
-//        return moves;
-//    }
 
     for(int i = 0; i < 8; i++) {
         Square* pawn = aColoursPieces->Pawns[i];
@@ -1254,49 +1246,14 @@ Move* generate_moves_for_one_color(OneColoursPieces* aColoursPieces, bool includ
         free(some_moves);
     }
 
+    // TODO IMPORTANT: Generate moves for promoted pieces
     return moves;
 }
 
-//Move* generate_all_legal_moves() {
-//    Move* moves = (Move*) malloc(MAX_POTENTIAL_TOTAL_MOVES_PER_COLOR * sizeof(Move));
-//    int total_moves_added = 0;
-//
-//    Move* whites_moves = generate_moves_for_one_color(allPieces.whitePieces, true);
-//    Move* blacks_moves = generate_moves_for_one_color(allPieces.blackPieces, true);
-//
-//    for(int j = 0; j < MAX_POTENTIAL_TOTAL_MOVES_PER_COLOR; j++) {
-//        Move* a_move = &whites_moves[j];
-//
-//        if (a_move->from_x == 0 && a_move->from_y == 0 &&
-//            a_move->to_x == 0 && a_move->to_y == 0) {
-//            break; // Skip empty moves
-//        }
-//        moves[total_moves_added] = *a_move;
-//        total_moves_added++;
-//    }
-//
-//    free(whites_moves);
-//
-//    for(int j = 0; j < MAX_POTENTIAL_TOTAL_MOVES_PER_COLOR; j++) {
-//        Move* a_move = &blacks_moves[j];
-//
-//        if (a_move->from_x == 0 && a_move->from_y == 0 &&
-//                a_move->to_x == 0 && a_move->to_y == 0) {
-//            break; // Skip empty moves
-//        }
-//        moves[total_moves_added] = *a_move;
-//        total_moves_added++;
-//    }
-//
-//    free(blacks_moves);
-//
-//    return moves;
-//}
-
+// TODO: Move to utils
 int are_coordinates_within1(int x1, int y1, int x2, int y2) {
     return (abs(x1 - x2) <= 1) && (abs(y1 - y2) <= 1);
 }
-
 
 /**
  * @param depth used to stop infinite recursion when making sure a potential move doesnt put the king in check
