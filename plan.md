@@ -13,8 +13,8 @@
    - [x] Record whether a king has ever been in check
    - [x] Castle short
    - [x] Castle long
-   - [ ] Complete castling rules
-     - [ ] King can't castle through check
+   - [x] Complete castling rules
+     - [X] King can't castle through check
      - [x] If king has moved, can't castle
      - [x] If rook has moved, can't castle
      - [X] King can castle even if hes been checked
@@ -24,7 +24,8 @@
 - [ ] Integration tests
 - [ ] Clean up code
    - [ ] Extract execute and undo logic into command pattern
-      - [x] Create stack of previous moves 
+      - [x] Create stack of previous moves
+   - [ ] When generating moves, only generate moves for the opposing colour once, and then pass that through to `is_king_in_check_after_move` and subsequently `is_king_in_check`
    - [ ] Resolve TODOs
    - [ ] move_picker.c should have a separate move/board score function
    - [ ] move.c needs split up. This will be risky and needs thorough integration tests in place first I think

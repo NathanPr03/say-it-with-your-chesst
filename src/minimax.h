@@ -13,4 +13,6 @@ typedef struct {
 // They can be cached in registry which = fast operations
 MinimaxResult minimax(int depth, bool isMaximizingPlayer, double alpha, double beta);
 
+int count_valid_moves(Move* moves);
+
 #endif //SAY_IT_WITH_YOUR_CHESST_MINIMAX_H

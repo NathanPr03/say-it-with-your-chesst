@@ -6,6 +6,18 @@
 #include "minimax.h"
 #include "game_history.h"
 
+bool helper_is_any_move_a_castle(Move* moves, int num_moves) {
+    for(int i=0; i<num_moves; i++) {
+        Move the_move = moves[i];
+
+        if(the_move.is_castling) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void test_castle_short() {
     create_game_history();
     OneColoursPieces* blackPieces = (OneColoursPieces*) calloc(1, sizeof(OneColoursPieces));
@@ -167,11 +179,10 @@ void test_cant_castle_short_if_king_moved() {
 
     execute_move(king_move_back, true);
 
-    // Now attempt to castle via minimax
-    MinimaxResult whiteDecision = minimax(3, true, -INFINITY, INFINITY);
-    Move* white_move = &whiteDecision.best_move;
+    Move* moves = generate_moves_for_one_color(allPieces.whitePieces, true, 2);
+    int num_moves = count_valid_moves(moves);
 
-    CU_ASSERT_FALSE(white_move->is_castling);
+    CU_ASSERT_FALSE(helper_is_any_move_a_castle(moves, num_moves));
 }
 
 void test_cant_castle_short_if_rook_moved() {
@@ -235,11 +246,10 @@ void test_cant_castle_short_if_rook_moved() {
     rook_move_back.is_en_passant = false;
     execute_move(rook_move_back, true);
 
-    // Attempt to castle
-    MinimaxResult whiteDecision = minimax(3, true, -INFINITY, INFINITY);
-    Move* white_move = &whiteDecision.best_move;
+    Move* moves = generate_moves_for_one_color(allPieces.whitePieces, true, 2);
+    int num_moves = count_valid_moves(moves);
 
-    CU_ASSERT_FALSE(white_move->is_castling);
+    CU_ASSERT_FALSE(helper_is_any_move_a_castle(moves, num_moves));
 }
 
 void test_cant_castle_long_if_king_moved() {
@@ -302,11 +312,10 @@ void test_cant_castle_long_if_king_moved() {
     king_move_away.is_en_passant = false;
     execute_move(king_move_back, true);
 
-    // Attempt castle
-    MinimaxResult whiteDecision = minimax(3, true, -INFINITY, INFINITY);
-    Move* white_move = &whiteDecision.best_move;
+    Move* moves = generate_moves_for_one_color(allPieces.whitePieces, true, 2);
+    int num_moves = count_valid_moves(moves);
 
-    CU_ASSERT_FALSE(white_move->is_castling);
+    CU_ASSERT_FALSE(helper_is_any_move_a_castle(moves, num_moves));
 }
 
 void test_cant_castle_long_if_rook_moved() {
@@ -370,11 +379,186 @@ void test_cant_castle_long_if_rook_moved() {
     rook_move_back.is_en_passant = false;
     execute_move(rook_move_back, true);
 
-    // Attempt castle
-    MinimaxResult whiteDecision = minimax(3, true, -INFINITY, INFINITY);
-    Move* white_move = &whiteDecision.best_move;
+    Move* moves = generate_moves_for_one_color(allPieces.whitePieces, true, 2);
+    int num_moves = count_valid_moves(moves);
 
-    CU_ASSERT_FALSE(white_move->is_castling);
+    CU_ASSERT_FALSE(helper_is_any_move_a_castle(moves, num_moves));
+}
+
+void test_cant_castle_short_if_piece_is_looking_at_a_square_the_king_would_need_to_move_through() {
+    create_game_history();
+    OneColoursPieces* blackPieces = (OneColoursPieces*) calloc(1, sizeof(OneColoursPieces));
+    OneColoursPieces* whitePieces = (OneColoursPieces*) calloc(1, sizeof(OneColoursPieces));
+
+    allPieces.whitePieces = whitePieces;
+    allPieces.blackPieces = blackPieces;
+
+    for (int x = 0; x < 8; x++) {
+        for (int y = 0; y < 8; y++) {
+            board[x][y].piece = EMPTY;
+            board[x][y].color = NONE;
+            board[x][y].x_coord = x;
+            board[x][y].y_coord = y;
+        }
+    }
+
+    board[7][4].piece = KING;
+    board[7][4].color = WHITE;
+    board[7][7].piece = ROOK;
+    board[7][7].color = WHITE;
+    board[5][3].piece = KNIGHT;
+    board[5][3].color = WHITE;
+
+    board[0][4].piece = KING;
+    board[0][4].color = BLACK;
+
+    //Place rook which blocks long castle
+    board[0][5].piece = ROOK;
+    board[0][5].color = BLACK;
+
+    allPieces.whitePieces->King = &board[7][4];
+    allPieces.whitePieces->Rooks[1] = &board[7][7];
+    allPieces.whitePieces->Knights[0] = &board[5][3];
+
+    allPieces.blackPieces->King = &board[0][4];
+    allPieces.blackPieces->Rooks[1] = &board[0][5];
+
+    Move* moves = generate_moves_for_one_color(allPieces.whitePieces, true, 2);
+    int num_moves = count_valid_moves(moves);
+
+    CU_ASSERT_FALSE(helper_is_any_move_a_castle(moves, num_moves));
+}
+
+void test_cant_castle_long_if_piece_is_looking_at_a_square_the_king_would_need_to_move_through() {
+    create_game_history();
+    OneColoursPieces* blackPieces = (OneColoursPieces*) calloc(1, sizeof(OneColoursPieces));
+    OneColoursPieces* whitePieces = (OneColoursPieces*) calloc(1, sizeof(OneColoursPieces));
+
+    allPieces.whitePieces = whitePieces;
+    allPieces.blackPieces = blackPieces;
+
+    for (int x = 0; x < 8; x++) {
+        for (int y = 0; y < 8; y++) {
+            board[x][y].piece = EMPTY;
+            board[x][y].color = NONE;
+            board[x][y].x_coord = x;
+            board[x][y].y_coord = y;
+        }
+    }
+
+    board[7][4].piece = KING;
+    board[7][4].color = WHITE;
+    board[7][0].piece = ROOK;
+    board[7][0].color = WHITE;
+    board[5][3].piece = KNIGHT;
+    board[5][3].color = WHITE;
+
+    board[0][4].piece = KING;
+    board[0][4].color = BLACK;
+
+    // Place rook in the way of long castle
+    board[0][2].piece = ROOK;
+    board[0][2].color = BLACK;
+
+    allPieces.whitePieces->King = &board[7][4];
+    allPieces.whitePieces->Rooks[0] = &board[7][0];
+    allPieces.whitePieces->Knights[0] = &board[5][3];
+
+    allPieces.blackPieces->King = &board[0][4];
+    allPieces.blackPieces->Rooks[0] = &board[0][2];
+
+    Move* moves = generate_moves_for_one_color(allPieces.whitePieces, true, 2);
+    int num_moves = count_valid_moves(moves);
+
+    CU_ASSERT_FALSE(helper_is_any_move_a_castle(moves, num_moves));
+}
+
+void test_cant_castle_long_if_king_is_in_check() {
+    create_game_history();
+    OneColoursPieces* blackPieces = (OneColoursPieces*) calloc(1, sizeof(OneColoursPieces));
+    OneColoursPieces* whitePieces = (OneColoursPieces*) calloc(1, sizeof(OneColoursPieces));
+
+    allPieces.whitePieces = whitePieces;
+    allPieces.blackPieces = blackPieces;
+
+    for (int x = 0; x < 8; x++) {
+        for (int y = 0; y < 8; y++) {
+            board[x][y].piece = EMPTY;
+            board[x][y].color = NONE;
+            board[x][y].x_coord = x;
+            board[x][y].y_coord = y;
+        }
+    }
+
+    board[7][4].piece = KING;
+    board[7][4].color = WHITE;
+    board[7][0].piece = ROOK;
+    board[7][0].color = WHITE;
+    board[5][3].piece = KNIGHT;
+    board[5][3].color = WHITE;
+
+    board[0][3].piece = KING;
+    board[0][3].color = BLACK;
+
+    // Place king in check
+    board[0][4].piece = ROOK;
+    board[0][4].color = BLACK;
+
+    allPieces.whitePieces->King = &board[7][4];
+    allPieces.whitePieces->Rooks[0] = &board[7][0];
+    allPieces.whitePieces->Knights[0] = &board[5][3];
+
+    allPieces.blackPieces->King = &board[0][3];
+    allPieces.blackPieces->Rooks[0] = &board[0][4];
+
+    Move* moves = generate_moves_for_one_color(allPieces.whitePieces, true, 2);
+    int num_moves = count_valid_moves(moves);
+
+    CU_ASSERT_FALSE(helper_is_any_move_a_castle(moves, num_moves));
+}
+
+void test_cant_castle_short_if_king_is_in_check() {
+    create_game_history();
+    OneColoursPieces* blackPieces = (OneColoursPieces*) calloc(1, sizeof(OneColoursPieces));
+    OneColoursPieces* whitePieces = (OneColoursPieces*) calloc(1, sizeof(OneColoursPieces));
+
+    allPieces.whitePieces = whitePieces;
+    allPieces.blackPieces = blackPieces;
+
+    for (int x = 0; x < 8; x++) {
+        for (int y = 0; y < 8; y++) {
+            board[x][y].piece = EMPTY;
+            board[x][y].color = NONE;
+            board[x][y].x_coord = x;
+            board[x][y].y_coord = y;
+        }
+    }
+
+    board[7][4].piece = KING;
+    board[7][4].color = WHITE;
+    board[7][7].piece = ROOK;
+    board[7][7].color = WHITE;
+    board[5][3].piece = KNIGHT;
+    board[5][3].color = WHITE;
+
+    board[0][3].piece = KING;
+    board[0][3].color = BLACK;
+
+    // Place king in check
+    board[0][4].piece = ROOK;
+    board[0][4].color = BLACK;
+
+    allPieces.whitePieces->King = &board[7][4];
+    allPieces.whitePieces->Rooks[1] = &board[7][7];
+    allPieces.whitePieces->Knights[0] = &board[5][3];
+
+    allPieces.blackPieces->King = &board[0][3];
+    allPieces.blackPieces->Rooks[0] = &board[0][4];
+
+    Move* moves = generate_moves_for_one_color(allPieces.whitePieces, true, 2);
+    int num_moves = count_valid_moves(moves);
+
+    CU_ASSERT_FALSE(helper_is_any_move_a_castle(moves, num_moves));
 }
 
 int main() {
@@ -387,6 +571,10 @@ int main() {
     CU_add_test(suite, "test_cant_castle_short_if_rook_moved", test_cant_castle_short_if_rook_moved);
     CU_add_test(suite, "test_cant_castle_long_if_king_moved", test_cant_castle_long_if_king_moved);
     CU_add_test(suite, "test_cant_castle_long_if_rook_moved", test_cant_castle_long_if_rook_moved);
+    CU_add_test(suite, "test_cant_castle_short_if_piece_is_looking_at_a_square_the_king_would_need_to_move_through", test_cant_castle_short_if_piece_is_looking_at_a_square_the_king_would_need_to_move_through);
+    CU_add_test(suite, "test_cant_castle_long_if_piece_is_looking_at_a_square_the_king_would_need_to_move_through", test_cant_castle_long_if_piece_is_looking_at_a_square_the_king_would_need_to_move_through);
+    CU_add_test(suite, "test_cant_castle_long_if_king_is_in_check", test_cant_castle_long_if_king_is_in_check);
+    CU_add_test(suite, "test_cant_castle_short_if_king_is_in_check", test_cant_castle_short_if_king_is_in_check);
 
     CU_basic_set_mode(CU_BRM_VERBOSE);
     CU_basic_run_tests();

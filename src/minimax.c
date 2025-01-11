@@ -1,19 +1,21 @@
 #include <stdbool.h>
 #include <math.h>
 #include <stdlib.h>
+#include <printf.h>
 #include "move.h"
 #include "board.h"
 #include "minimax.h"
 #include "pieces.h"
 
+//TODO: These should be in move.c once move.c is split up
 int compare_moves(const void* a, const void* b) {
-    Move* moveA = (Move*)a;
-    Move* moveB = (Move*)b;
+    Move* move_a = (Move*)a;
+    Move* move_b = (Move*)b;
 
-    if (moveA->score > moveB->score) {
-        return -1; // moveA should come before moveB
-    } else if (moveA->score < moveB->score) {
-        return 1; // moveA should come after moveB
+    if (move_a->score > move_b->score) {
+        return -1; // move_a should come before move_b
+    } else if (move_a->score < move_b->score) {
+        return 1; // move_a should come after move_b
     } else {
         return 0; // equal scores
     }
