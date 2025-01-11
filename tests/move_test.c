@@ -168,8 +168,6 @@ void test_checkmate() {
     printf("Blacks turn finished\n\n");
     Move *all_whites_moves = generate_moves_for_one_color(allPieces.whitePieces, true, 2);
 
-    printf("from_x: %d, from_y: %d, to_x: %d, to_y: %d\n", all_whites_moves->from_x, all_whites_moves->from_y, all_whites_moves->to_x, all_whites_moves->to_y);
-
     CU_ASSERT_TRUE(all_whites_moves->from_x == 0 &&
                    all_whites_moves->to_x == 0 &&
                    all_whites_moves->from_y == 0 &&

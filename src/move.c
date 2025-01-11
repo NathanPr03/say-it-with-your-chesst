@@ -1148,7 +1148,7 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
 
 void merge_arrays_for_pieces(Move* the_moves, Move* some_moves, int* total_moves_added) {
     if(some_moves == NULL) {
-        printf("some_moves in NULL, should this happen \n");
+        printf("some_moves is NULL, should this happen \n");
         return;
     }
 
@@ -1249,11 +1249,16 @@ Move* generate_moves_for_one_color(OneColoursPieces* aColoursPieces, bool includ
     for(int i=0; i<8; i++){
         Square* promoted_piece = aColoursPieces->PromotedPieces[i];
 
-        if(promoted_piece != NULL) {
-            Move* some_moves = generate_legal_moves_for_cell(promoted_piece, depth);
-            merge_arrays_for_pieces(moves, some_moves, &total_moves_added);
-            free(some_moves);
+        if(promoted_piece == NULL ||
+        (promoted_piece->x_coord == 0 && promoted_piece->y_coord == 0
+        && promoted_piece->color == NONE && promoted_piece-> piece == EMPTY)
+        ) {
+            continue;
         }
+
+        Move* some_moves = generate_legal_moves_for_cell(promoted_piece, depth);
+        merge_arrays_for_pieces(moves, some_moves, &total_moves_added);
+        free(some_moves);
     }
 
     return moves;
