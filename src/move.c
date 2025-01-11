@@ -1246,7 +1246,16 @@ Move* generate_moves_for_one_color(OneColoursPieces* aColoursPieces, bool includ
         free(some_moves);
     }
 
-    // TODO IMPORTANT: Generate moves for promoted pieces
+    for(int i=0; i<8; i++){
+        Square* promoted_piece = aColoursPieces->PromotedPieces[i];
+
+        if(promoted_piece != NULL) {
+            Move* some_moves = generate_legal_moves_for_cell(promoted_piece, depth);
+            merge_arrays_for_pieces(moves, some_moves, &total_moves_added);
+            free(some_moves);
+        }
+    }
+
     return moves;
 }
 
