@@ -26,8 +26,6 @@ bool is_king_in_check(Colour colour, int depth);
 
 Move* generate_moves_for_one_color(OneColoursPieces* aColoursPieces, bool include_king, int depth);
 
-Square** update_piece_pointer(Square* from, Square* to, Colour colour);
-
 int are_coordinates_within1(int x1, int y1, int x2, int y2);
 
 #endif //SAY_IT_WITH_YOUR_CHESST_MOVE_H

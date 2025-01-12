@@ -1,6 +1,7 @@
 #include <stddef.h>
 #include "board.h"
 #include "move.h"
+#include "moves/execute_move.h"
 
 int next_promotion_index(Colour colour) {
     if (colour == WHITE) {
