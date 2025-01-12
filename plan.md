@@ -22,8 +22,13 @@
    - [ ] Keep track of the last 8 board states
    - [ ] If the same board state has occurred 3 times, the game is a draw
 - [ ] Integration tests
+   - [ ] Random moves test
+     - [ ] Generate random numbers properly
+     - [ ] Serialise random moves with persistence mechanism - allows replaying random moves
+   - [ ] Test against good bot
+     - [x] Remove logic from main.c, parameterise play mode  
 - [ ] Clean up code
-   - [ ] Extract execute and undo logic into command pattern
+   - [x] Extract execute and undo logic into command pattern
       - [x] Create stack of previous moves
    - [ ] When generating moves, only generate moves for the opposing colour once, and then pass that through to `is_king_in_check_after_move` and subsequently `is_king_in_check`
    - [ ] Resolve TODOs
@@ -33,5 +38,8 @@
    - [ ] Rearrange Colour struct to have NONE first. And replace all usages of Colour = 0 being empty with NONE.
    - [ ] CamelCase or snake_case?
    - [ ] colour vs color
+- [ ] Improve UX
+- [ ] Benchmark engine skill 
+- [ ] Improve engine skill
   
 

@@ -3,5 +3,5 @@
 #pragma once
     int find_next_empty_piece_index(Colour colour, Piece piece_type);
 
-    int find_piece_index_by_coordinate(int x, int y, Piece piece_type, bool is_promoted_piece);
+    int find_piece_index_by_coordinate(int x, int y, bool is_promoted_piece);
 #endif

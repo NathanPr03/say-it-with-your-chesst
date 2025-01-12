@@ -3,9 +3,9 @@
 #include "move_picker.h"
 #include "promotion.h"
 #include "en_passant.h"
-#include "pieces.h"
 #include "castle.h"
 #include "game_history.h"
+#include "moves/execute_move.h"
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -96,7 +96,7 @@ Square** execute_move(Move move, bool commit) {
     Square *to = &board[move.to_x][move.to_y];
 
     if(commit) {
-        add_move_to_game_history(&move, *from, *to);
+        add_move_to_game_history(move, *from, *to, NULL);
     }
 
     Square* old = &(Square){to->piece, to->color, to->x_coord, to->y_coord};
@@ -200,69 +200,11 @@ bool is_king_in_check_after_move(Move move, Colour colour, int depth) {
         return true;
     }
 
-    Square previous_square_val = board[move.to_x][move.to_y];
-    Square *previous_square = &board[move.to_x][move.to_y];
-
-    Square **just_taken_square = execute_move(move, false);
-    Move two_moves_ago = previous_move;
-    previous_move = move; // Set this global variable for en passant
+    execute_move_new(&move, false);
 
     bool is_check = is_king_in_check(colour, depth);
 
-    // Undo move
-    execute_move((Move) {move.to_x, move.to_y, move.from_x, move.from_y}, false);
-    board[move.to_x][move.to_y] = previous_square_val;
-    previous_move = two_moves_ago;
-
-    // Promotion requires a more complicated undo. This is because it's moving two different piece types.
-    if (move.is_promotion) {
-        OneColoursPieces **pieces = (board[move.from_x][move.from_y].color == WHITE) ?
-                                    &allPieces.whitePieces : &allPieces.blackPieces;
-
-        board[move.from_x][move.from_y].piece = PAWN;
-
-        int pawn_index = find_next_empty_piece_index(board[move.from_x][move.from_y].color, PAWN);
-        (*pieces)->Pawns[pawn_index] = &board[move.from_x][move.from_y];
-
-        int promoted_piece_index = find_piece_index_by_coordinate(move.from_x, move.from_y, EMPTY, true);
-        (*pieces)->PromotedPieces[promoted_piece_index] = NULL;
-    } else if(move.is_en_passant) {
-        // An en passant moves the pawn to the square behind the taken pawn. This will be -1 for white and +1 for black
-        int en_passant_offset = (colour == WHITE) ? 1 : -1;
-        Square* the_moved_to_square = &board[move.to_x+en_passant_offset][move.to_y];
-        Colour opposite_colour = colour == WHITE ? BLACK : WHITE;
-        the_moved_to_square->color = opposite_colour;
-        the_moved_to_square->piece = PAWN;
-
-        *just_taken_square = the_moved_to_square;
-    } else if(move.is_castling) {
-        // Long castle
-        if(move.to_y == 2) {
-            Square* where_rook_should_be = &board[move.to_x][0];
-            Square* moved_rook = &board[move.to_x][3];
-
-            where_rook_should_be->piece = moved_rook->piece;
-            where_rook_should_be->color = moved_rook->color;
-
-            moved_rook->piece = EMPTY;
-            moved_rook->color = NONE;
-
-            *just_taken_square = where_rook_should_be;
-        }else if(move.to_y == 6) { // Short castle
-            Square* where_rook_should_be = &board[move.to_x][7];
-            Square* moved_rook = &board[move.to_x][5];
-
-            where_rook_should_be->piece = moved_rook->piece;
-            where_rook_should_be->color = moved_rook->color;
-
-            moved_rook->piece = EMPTY;
-            moved_rook->color = NONE;
-
-            *just_taken_square = where_rook_should_be;
-        }
-    } else if (just_taken_square != NULL) {
-        *just_taken_square = previous_square;
-    }
+    undo_move(&move);
 
     return is_check;
 }
@@ -372,9 +314,10 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
             }
 
             // En passant
-            if(is_move_en_passantable(previous_move)) {
+            if(is_previous_move_en_passantable()) {
+                Move the_previous_move = get_most_recent_move().move;
                 // Don't have to check if the piece is a pawn here as it's done in `is_move_en_passantable`
-                if(y > 0 && board[x][y-1].color == BLACK && x == previous_move.to_x && y-1 == previous_move.to_y) {
+                if(y > 0 && board[x][y-1].color == BLACK && x == the_previous_move.to_x && y-1 == the_previous_move.to_y) {
                     Move* move = &(Move) {x, y, x-1, y-1};
                     move->is_en_passant = true;
 
@@ -385,7 +328,7 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
                     }
                 }
 
-                if(y < 7 && board[x][y+1].color == BLACK && x == previous_move.to_x && y+1 == previous_move.to_y) {
+                if(y < 7 && board[x][y+1].color == BLACK && x == the_previous_move.to_x && y+1 == the_previous_move.to_y) {
                     Move* move = &(Move) {x, y, x-1, y+1};
                     move->is_en_passant = true;
 
@@ -484,9 +427,10 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
             }
 
             // En passant
-             if(is_move_en_passantable(previous_move)) {
+             if(is_previous_move_en_passantable()) {
+                Move the_previous_move = get_most_recent_move().move;
                 // Don't have to check if the piece is a pawn here as it's done in `is_move_en_passantable`
-                if(y > 0 && board[x][y-1].color == WHITE && x == previous_move.to_x && y-1 == previous_move.to_y) {
+                if(y > 0 && board[x][y-1].color == WHITE && x == the_previous_move.to_x && y-1 == the_previous_move.to_y) {
                     Move* move = &(Move) {x, y, x+1, y-1};
                     move->is_en_passant = true;
 

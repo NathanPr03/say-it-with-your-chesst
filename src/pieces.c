@@ -32,7 +32,8 @@ int find_promoted_piece_index_by_coordinate(int x, int y, Colour colour) {
     OneColoursPieces *pieces = colour == WHITE ? allPieces.whitePieces : allPieces.blackPieces;
 
     for (int i = 0; i < 8; i++) {
-        if (pieces->PromotedPieces[i]->x_coord == x && pieces->PromotedPieces[i]->y_coord == y) {
+        if (pieces->PromotedPieces[i] != NULL &&
+        (pieces->PromotedPieces[i]->x_coord == x && pieces->PromotedPieces[i]->y_coord == y)) {
             return i;
         }
     }
@@ -41,7 +42,7 @@ int find_promoted_piece_index_by_coordinate(int x, int y, Colour colour) {
 }
 
 // TODO: Implement for other pieces
-int find_piece_index_by_coordinate(int x, int y, Piece piece_type, bool is_promoted_piece) {
+int find_piece_index_by_coordinate(int x, int y, bool is_promoted_piece) {
     if(is_promoted_piece) {
         return find_promoted_piece_index_by_coordinate(x, y, board[x][y].color);
     }

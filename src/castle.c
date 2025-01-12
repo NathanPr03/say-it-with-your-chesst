@@ -124,7 +124,10 @@ bool has_rook_been_moved(Square the_rook, Colour colour) {
 }
 
 bool has_rook_or_king_been_moved(Square the_rook, Colour colour){
-    return !has_rook_been_moved(the_rook, colour) && !has_king_been_moved(colour); // TODO: Add more conditions
+    // Order of these is very important! A castle is marked as a king move in the game history
+    // This means after a castle, the kingside rook can move to the queenside square
+    // This will cause a null pointer in `has_rook_been_moved` as we will check the wrong index of the allPiece.xColour->Rooks array
+    return has_king_been_moved(colour) || has_rook_been_moved(the_rook, colour);
 }
 
 bool can_short_castle(Square king) {
@@ -137,7 +140,7 @@ bool can_short_castle(Square king) {
         return false;
     }
 
-    if(!has_rook_or_king_been_moved(*the_rook, colour)){
+    if(has_rook_or_king_been_moved(*the_rook, colour)){
         return false;
     }
 
@@ -166,7 +169,7 @@ bool can_long_castle(Square king) {
         return false;
     }
 
-    if(!has_rook_or_king_been_moved(*the_rook, colour)){
+    if(has_rook_or_king_been_moved(*the_rook, colour)){
         return false;
     }
 

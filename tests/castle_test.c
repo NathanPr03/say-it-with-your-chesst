@@ -5,6 +5,7 @@
 #include "move.h"
 #include "minimax.h"
 #include "game_history.h"
+#include "moves/execute_move.h"
 
 bool helper_is_any_move_a_castle(Move* moves, int num_moves) {
     for(int i=0; i<num_moves; i++) {
@@ -56,8 +57,7 @@ void test_castle_short() {
 
     CU_ASSERT_TRUE(white_move->is_castling);
 
-    execute_move(*white_move, true);
-    previous_move = *white_move;
+    execute_move_new(white_move, false);
 
     CU_ASSERT_TRUE(board[7][4].piece == EMPTY);
     CU_ASSERT_TRUE(board[7][4].color == NONE);
@@ -105,8 +105,7 @@ void test_castle_long() {
 
     CU_ASSERT_TRUE(white_move->is_castling);
 
-    execute_move(*white_move, true);
-    previous_move = *white_move;
+    execute_move_new(white_move, false);
 
     CU_ASSERT_TRUE(board[7][4].piece == EMPTY);
     CU_ASSERT_TRUE(board[7][4].color == NONE);
@@ -164,7 +163,7 @@ void test_cant_castle_short_if_king_moved() {
     king_move_away.is_promotion = false;
     king_move_away.is_en_passant = false;
 
-    execute_move(king_move_away, true);
+    execute_move_new(&king_move_away, false);
 
     // Move king back, ensuring the engine has recorded it as moved
     Move king_move_back;
@@ -177,7 +176,7 @@ void test_cant_castle_short_if_king_moved() {
     king_move_back.is_promotion = false;
     king_move_back.is_en_passant = false;
 
-    execute_move(king_move_back, true);
+    execute_move_new(&king_move_back, false);
 
     Move* moves = generate_moves_for_one_color(allPieces.whitePieces, true, 2);
     int num_moves = count_valid_moves(moves);
@@ -232,7 +231,7 @@ void test_cant_castle_short_if_rook_moved() {
     rook_move_away.promotion_piece = EMPTY;
     rook_move_away.is_promotion = false;
     rook_move_away.is_en_passant = false;
-    execute_move(rook_move_away, true);
+    execute_move_new(&rook_move_away, false);
 
     // Move rook back
     Move rook_move_back;
@@ -244,7 +243,7 @@ void test_cant_castle_short_if_rook_moved() {
     rook_move_back.promotion_piece = EMPTY;
     rook_move_back.is_promotion = false;
     rook_move_back.is_en_passant = false;
-    execute_move(rook_move_back, true);
+    execute_move_new(&rook_move_back, false);
 
     Move* moves = generate_moves_for_one_color(allPieces.whitePieces, true, 2);
     int num_moves = count_valid_moves(moves);
@@ -299,7 +298,7 @@ void test_cant_castle_long_if_king_moved() {
     king_move_away.promotion_piece = EMPTY;
     king_move_away.is_promotion = false;
     king_move_away.is_en_passant = false;
-    execute_move(king_move_away, true);
+    execute_move_new(&king_move_away, false);
 
     Move king_move_back;
     king_move_back.from_x = 7;
@@ -310,7 +309,7 @@ void test_cant_castle_long_if_king_moved() {
     king_move_away.promotion_piece = EMPTY;
     king_move_away.is_promotion = false;
     king_move_away.is_en_passant = false;
-    execute_move(king_move_back, true);
+    execute_move_new(&king_move_back, false);
 
     Move* moves = generate_moves_for_one_color(allPieces.whitePieces, true, 2);
     int num_moves = count_valid_moves(moves);
@@ -365,7 +364,7 @@ void test_cant_castle_long_if_rook_moved() {
     rook_move_away.promotion_piece = EMPTY;
     rook_move_away.is_promotion = false;
     rook_move_away.is_en_passant = false;
-    execute_move(rook_move_away, true);
+    execute_move_new(&rook_move_away, false);
 
     // Move rook back
     Move rook_move_back;
@@ -377,7 +376,7 @@ void test_cant_castle_long_if_rook_moved() {
     rook_move_back.promotion_piece = EMPTY;
     rook_move_back.is_promotion = false;
     rook_move_back.is_en_passant = false;
-    execute_move(rook_move_back, true);
+    execute_move_new(&rook_move_back, false);
 
     Move* moves = generate_moves_for_one_color(allPieces.whitePieces, true, 2);
     int num_moves = count_valid_moves(moves);
