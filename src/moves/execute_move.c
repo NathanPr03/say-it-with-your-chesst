@@ -35,7 +35,7 @@ void handle_special_moves(Move *move, Square* to, Square* from) {
     }
 }
 
-void execute_move_new(Move* move, bool is_undoing_move) {
+void execute_move(Move* move, bool is_undoing_move) {
     Square* from = &board[move->from_x][move->from_y];
     Square* to = &board[move->to_x][move->to_y];
 
@@ -122,7 +122,7 @@ void undo_move(Move* move) {
         move->is_castling
     };
 
-    execute_move_new(reverse_move, true);
+    execute_move(reverse_move, true);
 
     GameHistoryMove last_move = get_most_recent_move();
     Square the_taken_square = last_move.to_square;

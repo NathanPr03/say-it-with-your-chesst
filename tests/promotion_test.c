@@ -36,7 +36,7 @@ void test_promotion_by_moving_forward() {
     MinimaxResult meeneymax = minimax(1, true, -INFINITY, INFINITY);
     Move *white_move = &meeneymax.best_move;
 
-    execute_move_new(white_move, false);
+    execute_move(white_move, false);
 
     CU_ASSERT_TRUE(board[1][6].piece == EMPTY);
     CU_ASSERT_TRUE(board[1][6].color == NONE);
@@ -79,7 +79,7 @@ void test_promotion_by_taking_to_the_left() {
     MinimaxResult meeneymax = minimax(1, true, -INFINITY, INFINITY);
     Move *white_move = &meeneymax.best_move;
 
-    execute_move_new(white_move, false);
+    execute_move(white_move, false);
 
     CU_ASSERT_TRUE(board[1][5].piece == EMPTY);
     CU_ASSERT_TRUE(board[1][5].color == NONE);
@@ -123,7 +123,7 @@ void test_promotion_by_taking_to_the_right() {
     MinimaxResult meeneymax = minimax(1, true, -INFINITY, INFINITY);
     Move *white_move = &meeneymax.best_move;
 
-    execute_move_new(white_move, false);
+    execute_move(white_move, false);
 
     CU_ASSERT_TRUE(board[1][5].piece == EMPTY);
     CU_ASSERT_TRUE(board[1][5].color == NONE);
@@ -197,7 +197,7 @@ void test_promotion_to_knight() {
     MinimaxResult meeneymax = minimax(3, true, -INFINITY, INFINITY);
     Move *white_move = &meeneymax.best_move;
 
-    execute_move_new(white_move, false);
+    execute_move(white_move, false);
 
     CU_ASSERT_TRUE(board[1][0].piece == EMPTY);
     CU_ASSERT_TRUE(board[1][0].color == NONE);
@@ -254,7 +254,7 @@ void test_promotion_then_generate_moves_for_promoted_piece() {
     MinimaxResult meeneymax = minimax(1, true, -INFINITY, INFINITY);
     Move *white_move = &meeneymax.best_move;
 
-    execute_move_new(white_move, false);
+    execute_move(white_move, false);
 
     CU_ASSERT_TRUE(board[1][6].piece == EMPTY);
     CU_ASSERT_TRUE(board[1][6].color == NONE);

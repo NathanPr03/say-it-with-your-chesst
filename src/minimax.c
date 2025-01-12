@@ -58,7 +58,7 @@ MinimaxResult minimax(int depth, bool isMaximizingPlayer, double alpha, double b
                 break;
             }
 
-            execute_move_new(&move, false);
+            execute_move(&move, false);
 
             MinimaxResult current_result = minimax(depth - 1, false, alpha, beta);
 
@@ -89,7 +89,7 @@ MinimaxResult minimax(int depth, bool isMaximizingPlayer, double alpha, double b
             if (move.from_x == 0 && move.from_y == 0 && move.to_x == 0 && move.to_y == 0) {
                 break;
             }
-            execute_move_new(&move, false);
+            execute_move(&move, false);
 
             MinimaxResult current_result = minimax(depth - 1, true, alpha, beta);
 

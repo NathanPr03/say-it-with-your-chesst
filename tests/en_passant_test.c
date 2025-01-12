@@ -46,7 +46,7 @@ void test_en_passant() {
     // White moves first: pawn forward two squares. Depth of 1 so white doesn't realise this is a bad move
     MinimaxResult whiteFirst = minimax(1, true, -INFINITY, INFINITY);
     Move *white_move = &whiteFirst.best_move;
-    execute_move_new(white_move, false);
+    execute_move(white_move, false);
 
     CU_ASSERT_TRUE(board[6][3].piece == EMPTY);
     CU_ASSERT_TRUE(board[6][3].color == NONE);
@@ -57,7 +57,7 @@ void test_en_passant() {
     MinimaxResult blackResp = minimax(5, false, -INFINITY, INFINITY);
     Move *black_move = &blackResp.best_move;
 
-    execute_move_new(black_move, false);
+    execute_move(black_move, false);
 
     // Black pawn should move to (5,3), capturing the white pawn that jumped
     CU_ASSERT_TRUE(board[4][4].piece == EMPTY);

@@ -58,7 +58,7 @@ void play_against_user(int move_counter) {
         printf("Invalid move. Try again.\n");
     }
 
-    execute_move_new(&black_move, false);
+    execute_move(&black_move, false);
 
     printf("\n\n");
     print_board(NULL);
@@ -77,7 +77,7 @@ void play_against_bad_bot (int move_counter) {
     }
     Move *black_move = choose_move(all_blacks_moves);
 
-    execute_move_new(black_move, false);
+    execute_move(black_move, false);
 
     printf("\n\n");
     print_board(NULL);
@@ -96,7 +96,7 @@ void play_against_good_bot(int move_counter) {
         exit(0);
     }
 
-    execute_move_new(black_move, false);
+    execute_move(black_move, false);
 
     printf("\n\n");
     print_board(NULL);
@@ -138,7 +138,7 @@ void play_game(const char* game_mode) {
             exit(0);
         }
 
-        execute_move_new(white_move, false);
+        execute_move(white_move, false);
 
         printf("\n\n");
         print_board(NULL);

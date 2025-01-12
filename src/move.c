@@ -119,7 +119,7 @@ bool is_king_in_check_after_move(Move move, Colour colour, int depth) {
         return true;
     }
 
-    execute_move_new(&move, false);
+    execute_move(&move, false);
 
     bool is_check = is_king_in_check(colour, depth);
 

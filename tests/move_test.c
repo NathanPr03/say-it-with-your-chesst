@@ -162,7 +162,7 @@ void test_checkmate() {
         printf("Black has no moves left. Checkmate?\n");
     }
     Move *black_move = choose_move(all_blacks_moves);
-    execute_move_new(black_move, false);
+    execute_move(black_move, false);
 
     free(all_blacks_moves);
 
