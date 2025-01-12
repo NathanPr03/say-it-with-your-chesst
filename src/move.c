@@ -12,8 +12,6 @@
 
 const int MAX_POTENTIAL_TOTAL_MOVES_PER_COLOR = 129;
 
-Move previous_move = {0, 0, 0, 0, 0, false, EMPTY};
-
 /**
  * Used to see if king would be moving into check. These moves are executed, checked then undone.
  */
@@ -286,7 +284,7 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
                     }
                 }
 
-                if(y < 7 && board[x][y+1].color == WHITE && x == previous_move.to_x && y+1 == previous_move.to_y) {
+                if(y < 7 && board[x][y+1].color == WHITE && x == the_previous_move.to_x && y+1 == the_previous_move.to_y) {
                     Move* move = &(Move) {x, y, x+1, y+1};
                     move->is_en_passant = true;
 

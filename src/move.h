@@ -20,8 +20,6 @@ typedef struct {
     bool is_castling;
 } Move;
 
-extern Move previous_move;
-
 bool is_king_in_check(Colour colour, int depth);
 
 Move* generate_moves_for_one_color(OneColoursPieces* aColoursPieces, bool include_king, int depth);
