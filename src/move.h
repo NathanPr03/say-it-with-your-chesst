@@ -28,9 +28,6 @@ Move* generate_moves_for_one_color(OneColoursPieces* aColoursPieces, bool includ
 
 Square** update_piece_pointer(Square* from, Square* to, Colour colour);
 
-// TODO: Shouldnt be in header
-Square** execute_move(Move move, bool commit);
-
 int are_coordinates_within1(int x1, int y1, int x2, int y2);
 
 #endif //SAY_IT_WITH_YOUR_CHESST_MOVE_H
