@@ -8,7 +8,6 @@
 void handle_special_moves(Move *move, Square* to, Square* from) {
     if(move->is_promotion){
         promote_pawn_to_other_piece(to, move->promotion_piece);
-        game_history->moves[game_history->length-1].ref_to_all_pieces_ptr = (Square **) from; //TODO: BAD!!
     }else if(move->is_en_passant){
         Move last_executed_move = get_move_before_most_recent_move().move;
         Square* previously_moved_pawn = &board[last_executed_move.to_x][last_executed_move.to_y];
@@ -72,6 +71,10 @@ bool handle_undoing_special_moves(Move* move, Square** ref_to_all_pieces_ptr) {
 
         int promoted_piece_index = find_piece_index_by_coordinate(move->from_x, move->from_y, true);
         (*pieces)->PromotedPieces[promoted_piece_index] = NULL;
+
+        if(ref_to_all_pieces_ptr != NULL) { // This will reset the pointer to the taken piece
+            *ref_to_all_pieces_ptr = &board[move->to_x][move->to_y];
+        }
 
         was_it_a_special_move = true;
     }else if(move->is_en_passant) {

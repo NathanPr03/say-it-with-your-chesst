@@ -93,6 +93,7 @@ void play_against_good_bot(int move_counter) {
             exit(0);
         }
         printf("\nStalemate! It's a draw, after %d moves\n", move_counter);
+
         exit(0);
     }
 

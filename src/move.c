@@ -6,6 +6,7 @@
 #include "castle.h"
 #include "game_history.h"
 #include "moves/execute_move.h"
+#include "utils/validate_board.h"
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -49,6 +50,7 @@ bool is_king_in_check_after_move(Move move, Colour colour, int depth) {
 
     undo_move(&move);
 
+    validate_board_state();
     return is_check;
 }
 
@@ -183,7 +185,7 @@ Move* generate_legal_moves_for_cell(Square *square, int depth) {
                 }
             }
         } else if(colour == BLACK) {
-            // Move forward
+            // Move south
             if(x < 7 && board[x+1][y].piece == EMPTY) {
                 Move* move = &((Move) {x, y, x+1, y});
                 if(!is_king_in_check_after_move(*move, colour, depth)){

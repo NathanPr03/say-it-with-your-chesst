@@ -6,6 +6,7 @@
 #include "board.h"
 #include "minimax.h"
 #include "moves/execute_move.h"
+#include "utils/validate_board.h"
 
 //TODO: These should be in move.c once move.c is split up
 int compare_moves(const void* a, const void* b) {
@@ -43,7 +44,7 @@ MinimaxResult minimax(int depth, bool isMaximizingPlayer, double alpha, double b
         return result;
     }
 
-    // TODO: Can we parameterise come of this function?
+    // TODO: Can we parameterise some of this function?
     if (isMaximizingPlayer) {
         MinimaxResult best_result;
         best_result.score = -INFINITY;
@@ -63,6 +64,7 @@ MinimaxResult minimax(int depth, bool isMaximizingPlayer, double alpha, double b
             MinimaxResult current_result = minimax(depth - 1, false, alpha, beta);
 
             undo_move(&move);
+            validate_board_state();
 
             if (current_result.score > best_result.score) {
                 best_result.score = current_result.score;
@@ -94,6 +96,7 @@ MinimaxResult minimax(int depth, bool isMaximizingPlayer, double alpha, double b
             MinimaxResult current_result = minimax(depth - 1, true, alpha, beta);
 
             undo_move(&move);
+            validate_board_state();
 
             if (current_result.score < best_result.score) {
                 best_result.score = current_result.score;
