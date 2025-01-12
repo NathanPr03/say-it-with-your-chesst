@@ -1,6 +1,7 @@
 #include <stddef.h>
 #include "board.h"
 #include "move.h"
+#include "moves/execute_move.h"
 
 int next_promotion_index(Colour colour) {
     if (colour == WHITE) {
@@ -36,12 +37,12 @@ void promote_pawn_to_other_piece(Square* wasPawn, Piece pieceToPromoteTo){
         wasPawn->piece = pieceToPromoteTo;
         allPieces.whitePieces->PromotedPieces[index] = wasPawn;
 
-        update_piece_pointer(wasPawn, NULL, wasPawn->color);
+        update_piece_pointer(wasPawn, NULL, colour);
     } else if (colour == BLACK) {
         wasPawn->piece = pieceToPromoteTo;
         allPieces.blackPieces->PromotedPieces[index] = wasPawn;
 
-        update_piece_pointer(wasPawn, NULL, wasPawn->color);
+        update_piece_pointer(wasPawn, NULL, colour);
     }
 }
 

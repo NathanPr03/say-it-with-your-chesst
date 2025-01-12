@@ -4,9 +4,10 @@
 #include "move.h"
 
 typedef struct {
-    Move* move;
+    Move move;
     Square from_square;
     Square to_square;
+    Square** ref_to_all_pieces_ptr; // This is a reference to the pointer in the allPieces struct. Needed for undos
 } GameHistoryMove;
 
 typedef struct {
@@ -17,9 +18,11 @@ typedef struct {
 extern GameHistory *game_history;
 
 void create_game_history();
-
-void add_move_to_game_history(Move* move, Square from_square, Square to_square);
-
+void add_move_to_game_history(Move move, Square from_square, Square to_square, Square** ref_to_all_pieces_ptr);
 bool does_game_history_contain_any_moves_from_piece(Square square);
+
+GameHistoryMove get_most_recent_move();
+GameHistoryMove get_move_before_most_recent_move();
+void pop_most_recent_move();
 
 #endif //SAY_IT_WITH_YOUR_CHESST_GAME_HISTORY_H

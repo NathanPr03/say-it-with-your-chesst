@@ -5,6 +5,7 @@
 #include "move.h"
 #include "minimax.h"
 #include "game_history.h"
+#include "moves/execute_move.h"
 
 void test_promotion_by_moving_forward() {
     create_game_history();
@@ -35,7 +36,7 @@ void test_promotion_by_moving_forward() {
     MinimaxResult meeneymax = minimax(1, true, -INFINITY, INFINITY);
     Move *white_move = &meeneymax.best_move;
 
-    execute_move(*white_move, true);
+    execute_move(white_move, false);
 
     CU_ASSERT_TRUE(board[1][6].piece == EMPTY);
     CU_ASSERT_TRUE(board[1][6].color == NONE);
@@ -78,7 +79,7 @@ void test_promotion_by_taking_to_the_left() {
     MinimaxResult meeneymax = minimax(1, true, -INFINITY, INFINITY);
     Move *white_move = &meeneymax.best_move;
 
-    execute_move(*white_move, true);
+    execute_move(white_move, false);
 
     CU_ASSERT_TRUE(board[1][5].piece == EMPTY);
     CU_ASSERT_TRUE(board[1][5].color == NONE);
@@ -122,7 +123,7 @@ void test_promotion_by_taking_to_the_right() {
     MinimaxResult meeneymax = minimax(1, true, -INFINITY, INFINITY);
     Move *white_move = &meeneymax.best_move;
 
-    execute_move(*white_move, true);
+    execute_move(white_move, false);
 
     CU_ASSERT_TRUE(board[1][5].piece == EMPTY);
     CU_ASSERT_TRUE(board[1][5].color == NONE);
@@ -196,7 +197,7 @@ void test_promotion_to_knight() {
     MinimaxResult meeneymax = minimax(3, true, -INFINITY, INFINITY);
     Move *white_move = &meeneymax.best_move;
 
-    execute_move(*white_move, true);
+    execute_move(white_move, false);
 
     CU_ASSERT_TRUE(board[1][0].piece == EMPTY);
     CU_ASSERT_TRUE(board[1][0].color == NONE);
@@ -253,7 +254,7 @@ void test_promotion_then_generate_moves_for_promoted_piece() {
     MinimaxResult meeneymax = minimax(1, true, -INFINITY, INFINITY);
     Move *white_move = &meeneymax.best_move;
 
-    execute_move(*white_move, true);
+    execute_move(white_move, false);
 
     CU_ASSERT_TRUE(board[1][6].piece == EMPTY);
     CU_ASSERT_TRUE(board[1][6].color == NONE);
@@ -269,6 +270,60 @@ void test_promotion_then_generate_moves_for_promoted_piece() {
     CU_ASSERT_TRUE(helper_is_any_move_coming_from_a_promoted_piece(moves, num_moves));
 }
 
+void test_promotion_is_undone_properly() {
+    create_game_history();
+    OneColoursPieces* blackPieces = (OneColoursPieces*) calloc(1, sizeof(OneColoursPieces));
+    OneColoursPieces* whitePieces = (OneColoursPieces*) calloc(1, sizeof(OneColoursPieces));
+
+    allPieces.whitePieces = whitePieces;
+    allPieces.blackPieces = blackPieces;
+
+    for (int x = 0; x < 8; x++) {
+        for (int y = 0; y < 8; y++) {
+            board[x][y].piece = EMPTY;
+            board[x][y].color = NONE;
+            board[x][y].x_coord = x;
+            board[x][y].y_coord = y;
+        }
+    }
+
+    board[7][7] = (Square) {KING, BLACK, 7, 7};
+    board[0][0] = (Square) {KING, WHITE, 0, 0};
+
+    // Set up promotion by taking to the left
+    board[1][5] = (Square) {PAWN, WHITE, 1, 5}; // White pawn
+    board[0][4] = (Square) {ROOK, BLACK, 0, 4}; // Black rook (capturable to the left)
+
+    allPieces.whitePieces->King = &board[0][0];
+    allPieces.blackPieces->King = &board[7][7];
+    allPieces.whitePieces->Pawns[0] = &board[1][5];
+    allPieces.blackPieces->Rooks[0] = &board[0][4];
+
+    MinimaxResult meeneymax = minimax(1, true, -INFINITY, INFINITY);
+    Move *white_move = &meeneymax.best_move;
+
+    execute_move(white_move, false);
+
+    CU_ASSERT_TRUE(board[1][5].piece == EMPTY);
+    CU_ASSERT_TRUE(board[1][5].color == NONE);
+
+
+    CU_ASSERT_TRUE(board[0][4].color == WHITE);
+    CU_ASSERT_TRUE(board[0][4].piece == QUEEN);
+
+    CU_ASSERT_TRUE(allPieces.whitePieces->PromotedPieces[0] == &board[0][4]);
+
+    undo_move(white_move);
+
+    CU_ASSERT_TRUE(board[1][5].piece == PAWN);
+    CU_ASSERT_TRUE(board[1][5].color == WHITE);
+    CU_ASSERT_TRUE(board[0][4].piece == ROOK);
+    CU_ASSERT_TRUE(board[0][4].color == BLACK);
+
+    CU_ASSERT_TRUE(allPieces.whitePieces->PromotedPieces[0] == NULL);
+    CU_ASSERT_TRUE(allPieces.blackPieces->Rooks[0] == &board[0][4]);
+}
+
 int main() {
     CU_initialize_registry();
     CU_pSuite suite = CU_add_suite("PromotionTest", 0, 0);
@@ -278,6 +333,7 @@ int main() {
     CU_add_test(suite, "test_promotion_by_taking_to_the_right", test_promotion_by_taking_to_the_right);
     CU_add_test(suite, "test_promotion_to_knight", test_promotion_to_knight);
     CU_add_test(suite, "test_promotion_then_generate_moves_for_promoted_piece", test_promotion_then_generate_moves_for_promoted_piece);
+    CU_add_test(suite, "test_promotion_is_undone_properly", test_promotion_is_undone_properly);
 
     CU_basic_set_mode(CU_BRM_VERBOSE);
     CU_basic_run_tests();

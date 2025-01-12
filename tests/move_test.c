@@ -4,6 +4,7 @@
 #include "board.h"
 #include "move.h"
 #include "move_picker.h"
+#include "moves/execute_move.h"
 
 void test_initial_board_moves() {
     init_board();
@@ -161,7 +162,7 @@ void test_checkmate() {
         printf("Black has no moves left. Checkmate?\n");
     }
     Move *black_move = choose_move(all_blacks_moves);
-    execute_move(*black_move, true);
+    execute_move(black_move, false);
 
     free(all_blacks_moves);
 

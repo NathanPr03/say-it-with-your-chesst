@@ -5,7 +5,8 @@
 #include "move.h"
 #include "board.h"
 #include "minimax.h"
-#include "pieces.h"
+#include "moves/execute_move.h"
+#include "utils/validate_board.h"
 
 //TODO: These should be in move.c once move.c is split up
 int compare_moves(const void* a, const void* b) {
@@ -43,7 +44,7 @@ MinimaxResult minimax(int depth, bool isMaximizingPlayer, double alpha, double b
         return result;
     }
 
-    // TODO: Can we parameterise come of this function?
+    // TODO: Can we parameterise some of this function?
     if (isMaximizingPlayer) {
         MinimaxResult best_result;
         best_result.score = -INFINITY;
@@ -57,68 +58,13 @@ MinimaxResult minimax(int depth, bool isMaximizingPlayer, double alpha, double b
             if (move.from_x == 0 && move.from_y == 0 && move.to_x == 0 && move.to_y == 0) {
                 break;
             }
-            Square previous_square_val = board[move.to_x][move.to_y];
-            Square* previous_square = &board[move.to_x][move.to_y];
 
-            // Execute move
-            Square** just_taken_square = execute_move(move, false);
-            Move two_moves_ago = previous_move;
-            previous_move = move; // Set this global variable for en passant
+            execute_move(&move, false);
 
             MinimaxResult current_result = minimax(depth - 1, false, alpha, beta);
 
-            // Undo move
-            execute_move((Move){move.to_x, move.to_y, move.from_x, move.from_y}, false);
-            previous_move = two_moves_ago;
-            board[move.to_x][move.to_y] = previous_square_val;
-
-            // Promotion requires a more complicated undo. This is because it's moving two different piece types.
-            if(move.is_promotion) {
-                OneColoursPieces **pieces = (board[move.from_x][move.from_y].color == WHITE) ?
-                                            &allPieces.whitePieces : &allPieces.blackPieces;
-
-                board[move.from_x][move.from_y].piece = PAWN;
-
-                int pawn_index = find_next_empty_piece_index(board[move.from_x][move.from_y].color, PAWN);
-                (*pieces)->Pawns[pawn_index] = &board[move.from_x][move.from_y];
-
-                int promoted_piece_index = find_piece_index_by_coordinate(move.from_x, move.from_y, EMPTY, true);
-                (*pieces)->PromotedPieces[promoted_piece_index] = NULL;
-            } else if(move.is_en_passant) {
-                Square* the_moved_to_square = &board[move.to_x+1][move.to_y]; // An en passant moves the pawn to the square behind the taken pawn
-                Colour opposite_colour = BLACK;
-                the_moved_to_square->color = opposite_colour;
-                the_moved_to_square->piece = PAWN;
-
-                *just_taken_square = the_moved_to_square;
-            } else if(move.is_castling) {
-                // Long castle
-                if(move.to_y == 2) {
-                    Square* where_rook_should_be = &board[move.to_x][0];
-                    Square* moved_rook = &board[move.to_x][3];
-
-                    where_rook_should_be->piece = moved_rook->piece;
-                    where_rook_should_be->color = moved_rook->color;
-
-                    moved_rook->piece = EMPTY;
-                    moved_rook->color = NONE;
-
-                    *just_taken_square = where_rook_should_be;
-                }else if(move.to_y == 6) { // Short castle
-                    Square* where_rook_should_be = &board[move.to_x][7];
-                    Square* moved_rook = &board[move.to_x][5];
-
-                    where_rook_should_be->piece = moved_rook->piece;
-                    where_rook_should_be->color = moved_rook->color;
-
-                    moved_rook->piece = EMPTY;
-                    moved_rook->color = NONE;
-
-                    *just_taken_square = where_rook_should_be;
-                }
-            } else if (just_taken_square != NULL) {
-                *just_taken_square = previous_square;
-            }
+            undo_move(&move);
+            validate_board_state();
 
             if (current_result.score > best_result.score) {
                 best_result.score = current_result.score;
@@ -145,68 +91,12 @@ MinimaxResult minimax(int depth, bool isMaximizingPlayer, double alpha, double b
             if (move.from_x == 0 && move.from_y == 0 && move.to_x == 0 && move.to_y == 0) {
                 break;
             }
-            Square previous_square_val = board[move.to_x][move.to_y];
-            Square* previous_square = &board[move.to_x][move.to_y];
-
-            // Execute move
-            Square** just_taken_square = execute_move(move, false);
-            Move two_moves_ago = previous_move;
-            previous_move = move; // Set this global variable for en passants
+            execute_move(&move, false);
 
             MinimaxResult current_result = minimax(depth - 1, true, alpha, beta);
 
-            // Undo move
-            execute_move((Move){move.to_x, move.to_y, move.from_x, move.from_y}, false);
-            previous_move = two_moves_ago;
-            board[move.to_x][move.to_y] = previous_square_val;
-
-            // Promotion requires a more complicated undo. This is because it's moving two different piece types.
-            if(move.is_promotion) {
-                OneColoursPieces **pieces = (board[move.from_x][move.from_y].color == WHITE) ?
-                                            &allPieces.whitePieces : &allPieces.blackPieces;
-
-                board[move.from_x][move.from_y].piece = PAWN;
-
-                int pawn_index = find_next_empty_piece_index(board[move.from_x][move.from_y].color, PAWN);
-                (*pieces)->Pawns[pawn_index] = &board[move.from_x][move.from_y];
-
-                int promoted_piece_index = find_piece_index_by_coordinate(move.from_x, move.from_y, EMPTY, true);
-                (*pieces)->PromotedPieces[promoted_piece_index] = NULL;
-            } else if(move.is_en_passant) {
-                Square* the_moved_to_square = &board[move.to_x-1][move.to_y]; // An en passant moves the pawn to the square behind the taken pawn
-                Colour opposite_colour = WHITE;
-                the_moved_to_square->color = opposite_colour;
-                the_moved_to_square->piece = PAWN;
-
-                *just_taken_square = the_moved_to_square;
-            } else if(move.is_castling) {
-                // Long castle
-                if(move.to_y == 2) {
-                    Square* where_rook_should_be = &board[move.to_x][0];
-                    Square* moved_rook = &board[move.to_x][3];
-
-                    where_rook_should_be->piece = moved_rook->piece;
-                    where_rook_should_be->color = moved_rook->color;
-
-                    moved_rook->piece = EMPTY;
-                    moved_rook->color = NONE;
-
-                    *just_taken_square = where_rook_should_be;
-                }else if(move.to_y == 6) { // Short castle
-                    Square* where_rook_should_be = &board[move.to_x][7];
-                    Square* moved_rook = &board[move.to_x][5];
-
-                    where_rook_should_be->piece = moved_rook->piece;
-                    where_rook_should_be->color = moved_rook->color;
-
-                    moved_rook->piece = EMPTY;
-                    moved_rook->color = NONE;
-
-                    *just_taken_square = where_rook_should_be;
-                }
-            } else if (just_taken_square != NULL) {
-                *just_taken_square = previous_square;
-            }
+            undo_move(&move);
+            validate_board_state();
 
             if (current_result.score < best_result.score) {
                 best_result.score = current_result.score;

@@ -1,4 +1,4 @@
 #ifndef SAY_IT_WITH_YOUR_CHESST_EN_PASSANY_H
 #define SAY_IT_WITH_YOUR_CHESST_EN_PASSANY_H
-bool is_move_en_passantable(Move move);
+bool is_previous_move_en_passantable();
 #endif //SAY_IT_WITH_YOUR_CHESST_EN_PASSANY_H

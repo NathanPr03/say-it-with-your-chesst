@@ -20,16 +20,9 @@ typedef struct {
     bool is_castling;
 } Move;
 
-extern Move previous_move;
-
 bool is_king_in_check(Colour colour, int depth);
 
 Move* generate_moves_for_one_color(OneColoursPieces* aColoursPieces, bool include_king, int depth);
-
-Square** update_piece_pointer(Square* from, Square* to, Colour colour);
-
-// TODO: Shouldnt be in header
-Square** execute_move(Move move, bool commit);
 
 int are_coordinates_within1(int x1, int y1, int x2, int y2);
 
