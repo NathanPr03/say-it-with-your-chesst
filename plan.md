@@ -22,6 +22,7 @@
    - [ ] Keep track of the last 8 board states
    - [ ] If the same board state has occurred 3 times, the game is a draw
 - [ ] Integration tests
+   - [ ] Better run all tests facilities, surfacing any/all errors clearly  
    - [ ] Random moves test
      - [ ] Generate random numbers properly
      - [ ] Serialise random moves with persistence mechanism - allows replaying random moves
