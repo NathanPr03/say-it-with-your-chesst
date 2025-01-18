@@ -18,7 +18,10 @@ void convert_user_input_to_move(char* input, Move* move) {
     move->to_x = input[4] - '1';
 }
 
-void play_against_user(int move_counter) {
+/**
+  * @return is the game finished
+ */
+bool play_against_user(int move_counter) {
     char buffer[128];
 
     bool valid_move = false;
@@ -37,10 +40,10 @@ void play_against_user(int move_counter) {
                                          all_blacks_moves[0].to_y == 0 && all_blacks_moves[0].from_y == 0)) {
             if(is_king_in_check(BLACK, 1)) {
                 printf("\nWhite wins! Black is CHECKMATED, after %d moves\n", move_counter);
-                exit(0);
+                return true;
             }
             printf("\nStalemate! It's a draw, after %d moves\n", move_counter);
-            exit(0);
+            return true;
         }
 
         for (int j = 0; j < MAX_POTENTIAL_TOTAL_MOVES_PER_COLOR; j++) {
@@ -62,18 +65,23 @@ void play_against_user(int move_counter) {
 
     printf("\n\n");
     print_board(NULL);
+
+    return false;
 }
 
-void play_against_bad_bot (int move_counter) {
+/**
+  * @return is the game finished
+ */
+bool play_against_bad_bot (int move_counter) {
     Move *all_blacks_moves = generate_moves_for_one_color(allPieces.blackPieces, true, 2);
     if (all_blacks_moves == NULL || (all_blacks_moves[0].to_x == 0 && all_blacks_moves[0].from_x == 0 &&
                                      all_blacks_moves[0].to_y == 0 && all_blacks_moves[0].from_y == 0)) {
         if(is_king_in_check(BLACK, 1)) {
             printf("\nWhite wins! Black is CHECKMATED, after %d moves\n", move_counter);
-            exit(0);
+            return true;
         }
         printf("\nStalemate! It's a draw, after %d moves\n", move_counter);
-        exit(0);
+        return true;
     }
     Move *black_move = choose_move(all_blacks_moves);
 
@@ -81,33 +89,40 @@ void play_against_bad_bot (int move_counter) {
 
     printf("\n\n");
     print_board(NULL);
+
+    return false;
 }
 
-void play_against_good_bot(int move_counter) {
+/**
+  * @return is the game finished
+ */
+bool play_against_good_bot(int move_counter) {
     MinimaxResult meeneymax = minimax(5, false, -INFINITY, INFINITY);
     Move *black_move = &meeneymax.best_move;
 
     if(black_move->to_x == -1 && black_move->to_y == -1) {
         if(is_king_in_check(BLACK, 1)) {
             printf("\nWhite wins! Black is CHECKMATED, after %d moves\n", move_counter);
-            exit(0);
+            return true;
         }
         printf("\nStalemate! It's a draw, after %d moves\n", move_counter);
 
-        exit(0);
+        return true;
     }
 
     execute_move(black_move, false);
 
     printf("\n\n");
     print_board(NULL);
+
+    return false;
 }
 
 void play_game(const char* game_mode) {
     init_board();
     print_board(NULL);
 
-    void (*playModeFuncPtr)(int);
+    bool (*playModeFuncPtr)(int);
 
     if (strcmp(game_mode, "good-bot") == 0) {
         printf("Playing against good bot");
@@ -144,6 +159,8 @@ void play_game(const char* game_mode) {
         printf("\n\n");
         print_board(NULL);
 
-        playModeFuncPtr(move_counter);
+        if(playModeFuncPtr(move_counter)){
+            return;
+        }
     }
 }

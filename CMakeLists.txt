@@ -54,7 +54,7 @@ add_executable(castle_test tests/castle_test.c src/board.c src/move.c src/move_p
 target_link_libraries(castle_test ${CUNIT_LIB})
 
 add_executable(full_game_test tests/full_game_test.c src/board.c src/move.c src/move_picker.c src/postional_score_matrices.c src/promotion.c src/minimax.c src/pieces.c
-        src/en_passant.c src/castle.c src/game_history.c src/moves/execute_move.c src/utils/validate_board.c)
+        src/en_passant.c src/castle.c src/game_history.c src/moves/execute_move.c src/utils/validate_board.c src/game.c tests/utils/prints.c)
 target_link_libraries(full_game_test ${CUNIT_LIB})
 
 # Create a single executable-like target that runs all tests

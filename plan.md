@@ -31,7 +31,7 @@
 - [ ] Clean up code
    - [x] Extract execute and undo logic into command pattern
       - [x] Create stack of previous moves
-   - [ ] When generating moves, only generate moves for the opposing colour once, and then pass that through to `is_king_in_check_after_move` and subsequently `is_king_in_check`
+   - [ ] (Might not work) When generating moves, only generate moves for the opposing colour once, and then pass that through to `is_king_in_check_after_move` and subsequently `is_king_in_check`
    - [ ] Resolve TODOs
    - [ ] move_picker.c should have a separate move/board score function
    - [ ] move.c needs split up. This will be risky and needs thorough integration tests in place first I think
