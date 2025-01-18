@@ -74,12 +74,19 @@ void test_against_good_bot() {
     }
 }
 
+// TODO: This should probably play a random bot against a random bot. As the good bot is too good and endds the game too quickly.
+void test_against_random_bot() {
+    play_game("random-bot");
+    CU_PASS("Game ran without errors");
+}
+
 int main() {
     CU_initialize_registry();
 
     CU_pSuite suite = CU_add_suite("MainFunctionTests", NULL, NULL);
     CU_add_test(suite, "test_against_bad_bot", test_against_bad_bot);
     CU_add_test(suite, "test_against_good_bot", test_against_good_bot);
+    CU_add_test(suite, "test_against_random_bot", test_against_random_bot);
 
     CU_basic_set_mode(CU_BRM_VERBOSE);
     CU_basic_run_tests();

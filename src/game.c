@@ -9,6 +9,7 @@
 #include "move_picker.h"
 #include "minimax.h"
 #include "moves/execute_move.h"
+#include "utils/random.h"
 
 // Function to convert 1-indexed user input to 0-indexed coordinates
 void convert_user_input_to_move(char* input, Move* move) {
@@ -118,6 +119,38 @@ bool play_against_good_bot(int move_counter) {
     return false;
 }
 
+/**
+  * @return is the game finished
+ */
+bool play_against_random_bot(int move_counter) {
+    Move* all_blacks_moves = generate_moves_for_one_color(allPieces.blackPieces, true, 2);
+    if (all_blacks_moves == NULL || (all_blacks_moves[0].to_x == 0 && all_blacks_moves[0].from_x == 0 &&
+                                     all_blacks_moves[0].to_y == 0 && all_blacks_moves[0].from_y == 0)) {
+        if(is_king_in_check(BLACK, 1)) {
+            printf("\nWhite wins! Black is CHECKMATED, after %d moves\n", move_counter);
+            return true;
+        }
+        printf("\nStalemate! It's a draw, after %d moves\n", move_counter);
+        return true;
+    }
+
+    int num_of_valid_moves = count_valid_moves(all_blacks_moves);
+
+    unsigned int random_move_index = random_number(num_of_valid_moves);
+
+    // TODO: Write move to file before executing for reproducibility
+    Move blacks_move = all_blacks_moves[random_move_index];
+    execute_move(&blacks_move, false);
+
+    printf("\n\n");
+    print_board(NULL);
+
+    return false;
+}
+
+/**
+  * @return is the game finished
+ */
 void play_game(const char* game_mode) {
     init_board();
     print_board(NULL);
@@ -130,6 +163,9 @@ void play_game(const char* game_mode) {
     } else if (strcmp(game_mode, "bad-bot") == 0) {
         printf("Playing against bad bot");
         playModeFuncPtr = play_against_bad_bot;
+    } else if (strcmp(game_mode, "random-bot") == 0) {
+        printf("Playing against random bot");
+        playModeFuncPtr = play_against_random_bot;
     } else if (strcmp(game_mode, "user") == 0) {
         printf("Playing against user\n");
         playModeFuncPtr = play_against_user;
