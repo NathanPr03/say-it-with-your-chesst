@@ -24,9 +24,9 @@
    - [ ] Update full_game_test::test_against_good_bot and remove horrible timeout logic
 - [ ] Integration tests
    - [ ] Better run all tests facilities, surfacing any/all errors clearly  
-   - [ ] Random moves test
-     - [ ] Generate random numbers properly
-     - [ ] Serialise random moves with persistence mechanism - allows replaying random moves
+   - [x] Random moves test
+     - [x] Generate random numbers properly
+     - [x] Serialise random moves with persistence mechanism - allows replaying random moves
    - [x] Test against good bot
      - [x] Remove logic from main.c, parameterise play mode  
 - [ ] Clean up code
