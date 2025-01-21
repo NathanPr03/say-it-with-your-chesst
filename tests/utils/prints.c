@@ -15,7 +15,7 @@ struct RedirectedStdout redirect_stdout_to_pipe() {
 }
 
 // Utility function to check if the last printed line is equal to the expected string
-// Must first call redirect_stdout_to_pipe to redirect STDOUT to a capturable pipe
+// Must first call redirect_stdout_to_pipe to redirect STDOUT to a captureable pipe
 bool assert_last_printed_line_is(struct RedirectedStdout redirectedStdout, const char* expected) {
     fflush(stdout);
     dup2(redirectedStdout.saved_stdout, STDOUT_FILENO);

@@ -11,7 +11,6 @@
 #include <time.h>
 #include <signal.h>
 #include <sys/fcntl.h>
-#include <stdlib.h>
 #include "utils/persist_move.h"
 
 void test_against_bad_bot() {

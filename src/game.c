@@ -10,6 +10,8 @@
 #include "minimax.h"
 #include "moves/execute_move.h"
 
+const int MOST_MOVES_EVER_PLAYED_IN_A_CHESS_GAME = 269;
+
 // Function to convert 1-indexed user input to 0-indexed coordinates
 void convert_user_input_to_move(char* input, Move* move) {
     move->from_y = input[0] - '1';
@@ -143,7 +145,8 @@ void play_game(const char* game_mode) {
     }
 
     int move_counter = 0;
-    for (int i = 0; i < 10000; i++) {
+    // TODO: Until we get 3 fold repition/50 move rule logic, we will just play until we reach the most moves ever played in a chess game
+    for (int i = 0; i < MOST_MOVES_EVER_PLAYED_IN_A_CHESS_GAME; i++) {
         move_counter++;
         MinimaxResult meeneymax = minimax(5, true, -INFINITY, INFINITY);
         Move *white_move = &meeneymax.best_move;
@@ -166,4 +169,6 @@ void play_game(const char* game_mode) {
             return;
         }
     }
+
+    printf("\nExceeded the most moves ever played in a chess game. It's a draw\n");
 }
