@@ -22,8 +22,8 @@
    - [ ] Keep track of the last 8 board states
    - [ ] If the same board state has occurred 3 times, the game is a draw
    - [ ] Update full_game_test::test_against_good_bot and remove horrible timeout logic
-- [ ] Integration tests
-   - [ ] Better run all tests facilities, surfacing any/all errors clearly  
+- [x] Integration tests
+   - [x] Better run all tests facilities, surfacing any/all errors clearly  
    - [x] Random moves test
      - [x] Generate random numbers properly
      - [x] Serialise random moves with persistence mechanism - allows replaying random moves
