@@ -9,7 +9,6 @@
 #include "move_picker.h"
 #include "minimax.h"
 #include "moves/execute_move.h"
-#include "utils/random.h"
 
 // Function to convert 1-indexed user input to 0-indexed coordinates
 void convert_user_input_to_move(char* input, Move* move) {

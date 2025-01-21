@@ -74,5 +74,10 @@ cmake ..
 make tests
 ```
 
+### Full Game Test
 The `full_game_test` is slightly different to the other tests as it actually executes the `say_it_with_your_chesst` binary and checks the output.
 To run this the `say_it_with_your_chesst` binary first needs to be built as described above in the "Cmd line build instructions" section.
+
+#### Random Test
+One of the tests in `full_game_test.c` generates both black and whites moves randomly. This is to test the engine can handle a wide range of moves and board states. 
+For reproducibility, the moves that the test executes are written to a file `moves.txt`. These can then be replayed with the  `replay_random_moves` test, which is currently commented out.

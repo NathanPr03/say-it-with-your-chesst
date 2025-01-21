@@ -148,7 +148,7 @@ int main() {
     CU_add_test(suite, "test_against_bad_bot", test_against_bad_bot);
     CU_add_test(suite, "test_against_good_bot", test_against_good_bot);
     CU_add_test(suite, "test_against_random_bot", test_against_random_bot);
-    CU_add_test(suite, "replay_random_moves", replay_random_moves);
+//    CU_add_test(suite, "replay_random_moves", replay_random_moves); // Uncomment this line to replay the most recent random moves game
 
     CU_basic_set_mode(CU_BRM_VERBOSE);
     CU_basic_run_tests();
