@@ -1,5 +1,7 @@
 #include "validate_board.h"
 
+// Early warning system for desync between board and allPieces
+// TODO: Should probably only be called in a debug/non-prod context
 bool validate_board_state() {
     // For each non-empty square on the board
     for (int x = 0; x < 8; x++) {
