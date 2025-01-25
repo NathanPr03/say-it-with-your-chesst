@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "board.h"
 #include "move.h"
-#include "game_history.h"
+#include "game/game_history.h"
 
 bool is_previous_move_en_passantable() {
     Move the_previous_move = get_most_recent_move().move;

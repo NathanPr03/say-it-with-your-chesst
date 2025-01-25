@@ -1,7 +1,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include "execute_move.h"
-#include "game_history.h"
+#include "game/game_history.h"
 #include "promotion.h"
 #include "pieces.h"
 

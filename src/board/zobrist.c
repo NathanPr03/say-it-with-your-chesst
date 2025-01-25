@@ -1,6 +1,4 @@
 #include <stdint.h>
-#include <stdlib.h>
-#include <time.h>
 #include "zobrist.h"
 #include "move.h"
 #include "utils/random.h"

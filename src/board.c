@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "board.h"
 #include "postional_score_matrices.h"
-#include "game_history.h"
+#include "game/game_history.h"
 #include "board/zobrist.h"
 
 Square board[8][8];

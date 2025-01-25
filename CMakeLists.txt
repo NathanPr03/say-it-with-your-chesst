@@ -16,8 +16,8 @@ add_library(say_it_with_your_chesst_lib
         src/pieces.c
         src/en_passant.c
         src/castle.c
-        src/game_history.c
-        src/game.c
+        src/game/game_history.c
+        src/game/game.c
         src/moves/execute_move.c
         src/utils/validate_board.c
         src/utils/random.c
@@ -42,24 +42,24 @@ enable_testing()
 
 # Build all test executables
 add_executable(move_test tests/move_test.c src/board.c src/move.c src/move_picker.c src/postional_score_matrices.c src/promotion.c src/minimax.c src/pieces.c
-        src/en_passant.c src/castle.c src/game_history.c src/moves/execute_move.c src/utils/validate_board.c)
+        src/en_passant.c src/castle.c src/game/game_history.c src/moves/execute_move.c src/utils/validate_board.c src/board/zobrist.c src/utils/random.c)
 target_link_libraries(move_test ${CUNIT_LIB})
 
 add_executable(promotion_test tests/promotion_test.c src/board.c src/move.c src/move_picker.c src/postional_score_matrices.c src/promotion.c src/minimax.c src/pieces.c
-        src/en_passant.c src/castle.c src/game_history.c src/moves/execute_move.c src/utils/validate_board.c)
+        src/en_passant.c src/castle.c src/game/game_history.c src/moves/execute_move.c src/utils/validate_board.c src/board/zobrist.c src/utils/random.c)
 target_link_libraries(promotion_test ${CUNIT_LIB})
 
 add_executable(en_passant_test tests/en_passant_test.c src/board.c src/move.c src/move_picker.c src/postional_score_matrices.c src/promotion.c src/minimax.c src/pieces.c
-        src/en_passant.c src/castle.c src/game_history.c src/moves/execute_move.c src/utils/validate_board.c)
+        src/en_passant.c src/castle.c src/game/game_history.c src/moves/execute_move.c src/utils/validate_board.c src/board/zobrist.c src/utils/random.c)
 target_link_libraries(en_passant_test ${CUNIT_LIB})
 
 add_executable(castle_test tests/castle_test.c src/board.c src/move.c src/move_picker.c src/postional_score_matrices.c src/promotion.c src/minimax.c src/pieces.c
-        src/en_passant.c src/castle.c src/game_history.c src/moves/execute_move.c src/utils/validate_board.c)
+        src/en_passant.c src/castle.c src/game/game_history.c src/moves/execute_move.c src/utils/validate_board.c src/board/zobrist.c src/utils/random.c)
 target_link_libraries(castle_test ${CUNIT_LIB})
 
 add_executable(full_game_test tests/full_game_test.c src/board.c src/move.c src/move_picker.c src/postional_score_matrices.c src/promotion.c src/minimax.c src/pieces.c
-        src/en_passant.c src/castle.c src/game_history.c src/moves/execute_move.c src/utils/validate_board.c src/game.c tests/utils/prints.c src/utils/random.c
-        tests/utils/persist_move.c)
+        src/en_passant.c src/castle.c src/game/game_history.c src/moves/execute_move.c src/utils/validate_board.c src/game/game.c tests/utils/prints.c src/utils/random.c
+        src/board/zobrist.c tests/utils/persist_move.c)
 target_link_libraries(full_game_test ${CUNIT_LIB})
 
 # Register each executable as a test

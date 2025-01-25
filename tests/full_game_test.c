@@ -1,7 +1,7 @@
 #include <CUnit/Basic.h>
 #include <unistd.h>
 #include <sys/signal.h>
-#include "game.h"
+#include "game/game.h"
 #include "utils/prints.h"
 #include "board.h"
 #include "moves/execute_move.h"
