@@ -20,6 +20,8 @@ add_library(say_it_with_your_chesst_lib
         src/game.c
         src/moves/execute_move.c
         src/utils/validate_board.c
+        src/utils/random.c
+        src/board/zobrist.c
 )
 
 target_include_directories(say_it_with_your_chesst_lib PUBLIC ${PROJECT_SOURCE_DIR}/src)
@@ -36,7 +38,9 @@ include_directories("/opt/homebrew/opt/cunit/include")
 link_directories("/opt/homebrew/opt/cunit/lib")
 
 find_library(CUNIT_LIB cunit HINTS "/opt/homebrew/opt/cunit/lib")
+enable_testing()
 
+# Build all test executables
 add_executable(move_test tests/move_test.c src/board.c src/move.c src/move_picker.c src/postional_score_matrices.c src/promotion.c src/minimax.c src/pieces.c
         src/en_passant.c src/castle.c src/game_history.c src/moves/execute_move.c src/utils/validate_board.c)
 target_link_libraries(move_test ${CUNIT_LIB})
@@ -54,17 +58,19 @@ add_executable(castle_test tests/castle_test.c src/board.c src/move.c src/move_p
 target_link_libraries(castle_test ${CUNIT_LIB})
 
 add_executable(full_game_test tests/full_game_test.c src/board.c src/move.c src/move_picker.c src/postional_score_matrices.c src/promotion.c src/minimax.c src/pieces.c
-        src/en_passant.c src/castle.c src/game_history.c src/moves/execute_move.c src/utils/validate_board.c)
+        src/en_passant.c src/castle.c src/game_history.c src/moves/execute_move.c src/utils/validate_board.c src/game.c tests/utils/prints.c src/utils/random.c
+        tests/utils/persist_move.c)
 target_link_libraries(full_game_test ${CUNIT_LIB})
 
-# Create a single executable-like target that runs all tests
+# Register each executable as a test
+add_test(NAME MoveTest COMMAND move_test)
+add_test(NAME PromotionTest COMMAND promotion_test)
+add_test(NAME EnPassantTest COMMAND en_passant_test)
+add_test(NAME CastleTest COMMAND castle_test)
+add_test(NAME FullGameTest COMMAND full_game_test)
+
+# Create a custom target for running all tests
 add_custom_target(tests
-        COMMAND ./move_test || (echo "move_test failed!" && exit 1)
-        COMMAND ./promotion_test || (echo "promotion_test failed!" && exit 1)
-        COMMAND ./en_passant_test || (echo "en_passant_test failed!" && exit 1)
-        COMMAND ./castle_test || (echo "castle_test failed!" && exit 1)
-        COMMAND ./full_game_test || (echo "full_game_test failed!" && exit 1)
+        COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
         COMMENT "Running all tests"
 )
-
-add_test(NAME AllTests COMMAND tests)

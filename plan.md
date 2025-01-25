@@ -19,6 +19,9 @@
      - [x] If rook has moved, can't castle
      - [X] King can castle even if hes been checked
 - [ ] Three-fold repetition
+   - [ ] Zobrist Hashing https://en.wikipedia.org/wiki/Zobrist_hashing
+     - [ ] Apply Zobrist Hashing as a different board representation just for calculating repetitions
+     - [ ] Add Zobrist Hashing for the main board representation
    - [ ] Keep track of the last 8 board states
    - [ ] If the same board state has occurred 3 times, the game is a draw
 - [ ] Integration tests

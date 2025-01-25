@@ -3,12 +3,14 @@
 #include "board.h"
 #include "postional_score_matrices.h"
 #include "game_history.h"
+#include "board/zobrist.h"
 
 Square board[8][8];
 
 AllPieces allPieces;
 
 void init_board() {
+    init_zobrist_table();
     OneColoursPieces* blackPieces = (OneColoursPieces*) calloc(1, sizeof(OneColoursPieces));
     OneColoursPieces* whitePieces = (OneColoursPieces*) calloc(1, sizeof(OneColoursPieces));
 
