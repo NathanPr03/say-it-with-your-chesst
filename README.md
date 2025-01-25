@@ -53,11 +53,22 @@ To do this you pass in three args at runtime, this looks like:
 This can also be done through the IDE by editing the `Run Configuration -> Arguments` field.
 
 ## Tests 
-This project has sparse, incomplete, and likely flakey integration tests. There are no, and will be no unit tests.
-
 The tests use the CUnit test framework.
 
-They can be run through the IDE by hitting run one of the `some_functionality_test` target. Such as `move_test`.
+When adding new tests, register them to the `CMakeLists.txt` file in the root dir. This file will then need to be refreshed. 
+
+### Running All Tests
+The tests can be built and run through the IDE with the `All CTest` target.
+
+There are also a single target that runs all the tests:
+```bash
+cd build
+cmake ..
+make tests
+```
+
+### Running Individual Test
+The tests can be run individually through the IDE by hitting run on the target for a given test, such as `move_test`.
 
 Or through the command line:
 ```bash
@@ -67,12 +78,17 @@ make move_test
 ./move_test
 ```
 
-There are also a single target that runs all the tests, however this only works over the cmd line:
-```bash
-cd build
-cmake ..
-make tests
-```
+### Full Game Test
+The `full_game_test` is slightly different to the other tests. It runs a full game between the engine and another engine.
 
-The `full_game_test` is slightly different to the other tests as it actually executes the `say_it_with_your_chesst` binary and checks the output.
-To run this the `say_it_with_your_chesst` binary first needs to be built as described above in the "Cmd line build instructions" section.
+#### Against Bad Bot
+This test runs a full game between the engine and a naive version of itself, which always executes the first of all available moves.
+This means the engine should beat it in exactly 9 moves. As the eval function of the engine changes, this will likely need updated.
+
+#### Against Good Bot
+This test runs a full game between the engine and itself. 
+As there is no three-fold repetition or fifty-move rule (yet), the game will continue indefinitely, so a timeout has been added.
+
+#### Random Test
+One of the tests in `full_game_test.c` generates both black and whites moves randomly. This is to test the engine can handle a wide range of moves and board states. 
+For reproducibility, the moves that the test executes are written to a file `moves.txt`. These can then be replayed with the  `replay_random_moves` test, which is currently commented out.
