@@ -8,10 +8,8 @@
 #define NUM_PIECE_TYPES 7 // pawn, knight, bishop, rook, queen, king, empty
 #define NUM_PIECE_TYPE_AND_COLOUR_COMBINATIONS NUM_COLOURS * NUM_PIECE_TYPES
 
-// Zobrist hash key type
 typedef uint64_t ZobristKey;
 
-// Global Zobrist hash table
 ZobristKey zobrist_table[BOARD_SIZE][BOARD_SIZE][NUM_PIECE_TYPE_AND_COLOUR_COMBINATIONS];
 ZobristKey current_board_hash = 0;
 

@@ -1,5 +1,8 @@
 #include "game_history.h"
 #include "stdlib.h"
+#include "board/zobrist.h"
+#include "three-fold-repitition.h"
+#include "uthash.h"
 
 GameHistory* game_history;
 
@@ -76,3 +79,5 @@ void pop_most_recent_move() {
     game_history->length--;
     game_history->moves = (GameHistoryMove*) realloc(game_history->moves, game_history->length * sizeof(GameHistoryMove));
 }
+
+

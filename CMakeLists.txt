@@ -22,12 +22,18 @@ add_library(say_it_with_your_chesst_lib
         src/utils/validate_board.c
         src/utils/random.c
         src/board/zobrist.c
+        src/game/three-fold-repitition.c
+        include/uthash.h
 )
 
-target_include_directories(say_it_with_your_chesst_lib PUBLIC ${PROJECT_SOURCE_DIR}/src)
+#include_directories(${PROJECT_SOURCE_DIR}/include)
+
+target_include_directories(say_it_with_your_chesst_lib PUBLIC ${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/include)
 
 add_executable(say_it_with_your_chesst
         src/main.c
+        src/game/zobrist_game_history.c
+        src/game/zobrist_game_history.h
 )
 
 target_link_libraries(say_it_with_your_chesst say_it_with_your_chesst_lib)

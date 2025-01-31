@@ -25,4 +25,6 @@ GameHistoryMove get_most_recent_move();
 GameHistoryMove get_move_before_most_recent_move();
 void pop_most_recent_move();
 
+bool add_move_to_game_history_zobrist(Move* move, Square* from_square, Square* to_square);
+
 #endif //SAY_IT_WITH_YOUR_CHESST_GAME_HISTORY_H

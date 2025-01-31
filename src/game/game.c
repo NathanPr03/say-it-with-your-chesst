@@ -10,11 +10,13 @@
 #include "minimax.h"
 #include "moves/execute_move.h"
 #include "board/zobrist.h"
+#include "game_history.h"
+#include "three-fold-repitition.h"
 
 const int MOST_MOVES_EVER_PLAYED_IN_A_CHESS_GAME = 269;
 
 // Function to convert 1-indexed user input to 0-indexed coordinates
-void convert_user_input_to_move(char* input, Move* move) {
+void convert_user_input_to_move(char *input, Move *move) {
     move->from_y = input[0] - '1';
     move->from_x = input[1] - '1';
     move->to_y = input[3] - '1';
@@ -38,10 +40,10 @@ bool play_against_user(int move_counter) {
         convert_user_input_to_move(buffer, &users_move);
 
         // Validate the move
-        Move* all_blacks_moves = generate_moves_for_one_color(allPieces.blackPieces, true, 2);
+        Move *all_blacks_moves = generate_moves_for_one_color(allPieces.blackPieces, true, 2);
         if (all_blacks_moves == NULL || (all_blacks_moves[0].to_x == 0 && all_blacks_moves[0].from_x == 0 &&
                                          all_blacks_moves[0].to_y == 0 && all_blacks_moves[0].from_y == 0)) {
-            if(is_king_in_check(BLACK, 1)) {
+            if (is_king_in_check(BLACK, 1)) {
                 printf("\nWhite wins! Black is CHECKMATED, after %d moves\n", move_counter);
                 return true;
             }
@@ -50,7 +52,7 @@ bool play_against_user(int move_counter) {
         }
 
         for (int j = 0; j < MAX_POTENTIAL_TOTAL_MOVES_PER_COLOR; j++) {
-            Move* a_move = &all_blacks_moves[j];
+            Move *a_move = &all_blacks_moves[j];
             if (a_move->from_x == users_move.from_x && a_move->from_y == users_move.from_y &&
                 a_move->to_x == users_move.to_x && a_move->to_y == users_move.to_y) {
                 valid_move = true;
@@ -75,11 +77,11 @@ bool play_against_user(int move_counter) {
 /**
   * @return is the game finished
  */
-bool play_against_bad_bot (int move_counter) {
+bool play_against_bad_bot(int move_counter) {
     Move *all_blacks_moves = generate_moves_for_one_color(allPieces.blackPieces, true, 2);
     if (all_blacks_moves == NULL || (all_blacks_moves[0].to_x == 0 && all_blacks_moves[0].from_x == 0 &&
                                      all_blacks_moves[0].to_y == 0 && all_blacks_moves[0].from_y == 0)) {
-        if(is_king_in_check(BLACK, 1)) {
+        if (is_king_in_check(BLACK, 1)) {
             printf("\nWhite wins! Black is CHECKMATED, after %d moves\n", move_counter);
             return true;
         }
@@ -103,8 +105,8 @@ bool play_against_good_bot(int move_counter) {
     MinimaxResult meeneymax = minimax(5, false, -INFINITY, INFINITY);
     Move *black_move = &meeneymax.best_move;
 
-    if(black_move->to_x == -1 && black_move->to_y == -1) {
-        if(is_king_in_check(BLACK, 1)) {
+    if (black_move->to_x == -1 && black_move->to_y == -1) {
+        if (is_king_in_check(BLACK, 1)) {
             printf("\nWhite wins! Black is CHECKMATED, after %d moves\n", move_counter);
             return true;
         }
@@ -114,7 +116,12 @@ bool play_against_good_bot(int move_counter) {
     }
 
     execute_move(black_move, false);
-    update_zobrist_hash(black_move, &board[black_move->from_x][black_move->from_y], &board[black_move->to_x][black_move->to_y]);
+    add_move_to_game_history_zobrist(black_move, &board[black_move->from_x][black_move->from_y],
+                                     &board[black_move->to_x][black_move->to_y]);
+    if (is_threefold_repetition()) {
+        printf("\nStalemate! Three fold repetition after %d moves\n", move_counter);
+        return true;
+    }
 
     printf("\n\n");
     print_board(NULL);
@@ -125,7 +132,7 @@ bool play_against_good_bot(int move_counter) {
 /**
   * @return is the game finished
  */
-void play_game(const char* game_mode) {
+void play_game(const char *game_mode) {
     init_board();
     print_board(NULL);
 
@@ -147,14 +154,14 @@ void play_game(const char* game_mode) {
     }
 
     int move_counter = 0;
-    // TODO: Until we get 3 fold repetition/50 move rule logic, we will just play until we reach the most moves ever played in a chess game
-    for (int i = 0; i < MOST_MOVES_EVER_PLAYED_IN_A_CHESS_GAME; i++) {
+    // Loop until checkmate or stalemate
+    while (1) {
         move_counter++;
         MinimaxResult meeneymax = minimax(5, true, -INFINITY, INFINITY);
         Move *white_move = &meeneymax.best_move;
 
-        if(white_move->to_x == -1 && white_move->to_y == -1) {
-            if(is_king_in_check(BLACK, 1)) {
+        if (white_move->to_x == -1 && white_move->to_y == -1) {
+            if (is_king_in_check(BLACK, 1)) {
                 printf("\nBlack wins! White is CHECKMATED, after %d moves\n", move_counter);
                 exit(0);
             }
@@ -163,15 +170,18 @@ void play_game(const char* game_mode) {
         }
 
         execute_move(white_move, false);
-        update_zobrist_hash(white_move, &board[white_move->from_x][white_move->from_y], &board[white_move->to_x][white_move->to_y]);
+        add_move_to_game_history_zobrist(white_move, &board[white_move->from_x][white_move->from_y],
+                                         &board[white_move->to_x][white_move->to_y]);
+        if (is_threefold_repetition()) {
+            printf("\nStalemate! Three fold repetition after %d moves\n", move_counter);
+            return;
+        }
 
         printf("\n\n");
         print_board(NULL);
 
-        if(playModeFuncPtr(move_counter)){
+        if (playModeFuncPtr(move_counter)) {
             return;
         }
     }
-
-    printf("\nExceeded the most moves ever played in a chess game. It's a draw\n");
 }
