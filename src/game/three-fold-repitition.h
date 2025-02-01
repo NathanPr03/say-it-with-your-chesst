@@ -1,0 +1,8 @@
+#ifndef SAY_IT_WITH_YOUR_CHESST_THREE_FOLD_REPITITION_H
+#define SAY_IT_WITH_YOUR_CHESST_THREE_FOLD_REPITITION_H
+
+#include "board/zobrist.h"
+
+bool is_threefold_repetition();
+
+#endif //SAY_IT_WITH_YOUR_CHESST_THREE_FOLD_REPITITION_H

@@ -76,3 +76,5 @@ void pop_most_recent_move() {
     game_history->length--;
     game_history->moves = (GameHistoryMove*) realloc(game_history->moves, game_history->length * sizeof(GameHistoryMove));
 }
+
+

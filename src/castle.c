@@ -1,6 +1,6 @@
 #include <stddef.h>
 #include "castle.h"
-#include "game_history.h"
+#include "game/game_history.h"
 #include "minimax.h"
 
 // These are dependant on the rooks been ordered "correctly" // TODO: Maybe change this?

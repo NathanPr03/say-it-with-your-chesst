@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include "move.h"
 #include "minimax.h"
-#include "game_history.h"
+#include "game/game_history.h"
 #include "moves/execute_move.h"
 
 void test_en_passant() {

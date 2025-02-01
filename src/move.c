@@ -4,7 +4,7 @@
 #include "promotion.h"
 #include "en_passant.h"
 #include "castle.h"
-#include "game_history.h"
+#include "game/game_history.h"
 #include "moves/execute_move.h"
 #include "utils/validate_board.h"
 #include <stdlib.h>
