@@ -2,7 +2,7 @@
 #define SAY_IT_WITH_YOUR_CHESST_ZOBRIST_GAME_HISTORY_H
 
 #include "board/zobrist.h"
-#include "uthash.h"
+#include "../include/uthash.h"
 
 typedef struct {
     ZobristKey hash;   // The Zobrist hash key

@@ -1,6 +1,6 @@
 #include <stdbool.h>
 #include "three-fold-repitition.h"
-#include "uthash.h"
+#include "../include/uthash.h"
 #include "board/zobrist.h"
 #include "zobrist_game_history.h"
 

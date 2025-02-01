@@ -1,8 +1,5 @@
 #include "game_history.h"
 #include "stdlib.h"
-#include "board/zobrist.h"
-#include "three-fold-repitition.h"
-#include "uthash.h"
 
 GameHistory* game_history;
 
