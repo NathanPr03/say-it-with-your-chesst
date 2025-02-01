@@ -47,7 +47,7 @@ double move_score_from_capture(Move* move) {
     } else if (square->piece == ROOK) {
         score += 5;
     } else if (square->piece == KING) {
-        score += 9999999; //TODO: How much should checks be worth?
+        score += 9999999; // This isn't possible, cant "take" a king
     } else if (square->piece == QUEEN) {
         score += 9;
     } else if (other_pieces.King->x_coord == to_x && other_pieces.King->y_coord == to_y) { // Check

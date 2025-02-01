@@ -19,7 +19,6 @@ int find_next_empty_pawn_index(Colour colour) {
     return -1;
 }
 
-//TODO: Implement for other pieces
 int find_next_empty_piece_index(Colour colour, Piece piece_type) {
     if(piece_type == PAWN) {
         return find_next_empty_pawn_index(colour);
@@ -41,7 +40,6 @@ int find_promoted_piece_index_by_coordinate(int x, int y, Colour colour) {
     return -1;
 }
 
-// TODO: Implement for other pieces
 int find_piece_index_by_coordinate(int x, int y, bool is_promoted_piece) {
     if(is_promoted_piece) {
         return find_promoted_piece_index_by_coordinate(x, y, board[x][y].color);

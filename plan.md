@@ -18,13 +18,12 @@
      - [x] If king has moved, can't castle
      - [x] If rook has moved, can't castle
      - [X] King can castle even if hes been checked
-- [ ] Three-fold repetition
-   - [ ] Zobrist Hashing https://en.wikipedia.org/wiki/Zobrist_hashing
-     - [ ] Apply Zobrist Hashing as a different board representation just for calculating repetitions
-     - [ ] Add Zobrist Hashing for the main board representation
-   - [ ] Keep track of the last 8 board states
-   - [ ] If the same board state has occurred 3 times, the game is a draw
-   - [ ] Update full_game_test::test_against_good_bot and remove horrible timeout logic
+- [x] Three-fold repetition
+   - [x] Zobrist Hashing https://en.wikipedia.org/wiki/Zobrist_hashing
+     - [x] Apply Zobrist Hashing as a different board representation just for calculating repetitions
+     - [x] Add Zobrist Hashing for the main board representation
+   - [x] If the same board state has occurred 3 times, the game is a draw
+   - [x] Update full_game_test::test_against_good_bot and remove horrible timeout logic
 - [x] Integration tests
    - [x] Better run all tests facilities, surfacing any/all errors clearly  
    - [x] Random moves test
@@ -46,5 +45,6 @@
 - [ ] Improve UX
 - [ ] Benchmark engine skill 
 - [ ] Improve engine skill
+- [ ] 50 Move rule
   
 
